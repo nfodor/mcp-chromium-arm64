@@ -225,7 +225,23 @@ claude
    - Show me how to run it
    - Keep iterating until it works perfectly
 
-   Let's build this step by step and test each part as we go!
+   **MANDATORY TESTING PROTOCOL:**
+   - When testing the web interface, you MUST use chromium-arm64 browser automation tools
+   - Navigate to http://localhost:3000 and take screenshots
+   - Click buttons and test the interface visually
+   - NO CURL ALLOWED for UI testing - use browser automation only
+   - Provide visual proof the dashboard works with screenshots
+
+   **DATA VERIFICATION REQUIREMENTS:**
+   - Verify ALL data-driven components display correctly in the GUI
+   - Test every UI interface that allows data to be saved or displayed
+   - Check that timestamps, status indicators, and site names appear properly
+   - Test any forms, filters, or display toggles that change how data is shown
+   - Screenshot all data displays to prove they work
+   - Verify data persistence - refresh page and confirm data remains
+   - Test any export, download, or data manipulation features
+
+   Let's build this step by step and test each part properly with complete data verification!
    ```
 
 3. **Watch the Magic Happen**: Claude will:
@@ -241,7 +257,7 @@ claude
 
 ### More Ready-to-Use Prompts
 
-**🔍 SEO Rank Tracker**:
+**SEO Rank Tracker**:
 ```
 Build an SEO rank tracking tool that:
 1. Checks Google search rankings for specific keywords
@@ -250,10 +266,19 @@ Build an SEO rank tracking tool that:
 4. Shows ranking changes over time in a web dashboard
 5. Saves data to a JSON file
 
-Test each search, fix any issues, and show me the working dashboard.
+**MANDATORY TESTING:**
+- Use chromium-arm64 browser automation to test the dashboard
+- Navigate to the web interface and take screenshots
+- NO CURL - use browser tools only
+- Verify ranking data displays correctly in the GUI
+- Test keyword input forms and search functionality
+- Screenshot the ranking charts/tables to prove they work
+- Verify data saves and persists between page refreshes
+
+Test each search, fix any issues, and show me the working dashboard with visual proof.
 ```
 
-**💰 Price Monitor**:
+**Price Monitor**:
 ```
 Create a price monitoring service:
 1. Check product prices on Amazon and eBay
@@ -262,10 +287,19 @@ Create a price monitoring service:
 4. Alert when prices drop below target amounts
 5. Simple web interface to add/remove products
 
-Build, test, iterate until it works perfectly!
+**MANDATORY TESTING:**
+- Use chromium-arm64 browser automation tools only
+- Navigate to the web interface and take screenshots
+- Test the add/remove product forms visually
+- Verify price data displays correctly in tables/charts
+- Check that alerts and notifications work in the UI
+- Screenshot all data displays and product management interfaces
+- NO CURL for UI testing
+
+Build, test, iterate until it works perfectly with complete visual verification!
 ```
 
-**📊 Social Media Monitor**:
+**Social Media Monitor**:
 ```
 Build a brand mention tracker:
 1. Search Twitter, Reddit, and news sites for mentions
@@ -274,7 +308,17 @@ Build a brand mention tracker:
 4. Show results in a clean dashboard
 5. Save findings to track trends over time
 
-Test with real searches and fix any issues found.
+**MANDATORY TESTING:**
+- Use chromium-arm64 browser automation to verify the dashboard
+- Navigate to the interface and take screenshots of ALL data displays
+- Test search forms, keyword inputs, and filters visually
+- Verify mention data appears correctly in tables/lists
+- Check trend charts and historical data displays
+- Test any export or download features
+- Screenshot every data-driven component to prove it works
+- NO CURL - browser automation only
+
+Test with real searches and fix any issues found with complete data verification.
 ```
 
 ---
