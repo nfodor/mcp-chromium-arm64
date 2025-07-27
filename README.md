@@ -103,6 +103,10 @@
 
 ## 🚀 Quick Start
 
+### 📚 Complete Beginner Guide
+**Never set up a Raspberry Pi before?** 
+👉 **[COMPLETE SETUP GUIDE](docs/COMPLETE-SETUP-GUIDE.md)** - Step-by-step from zero to SaaS builder in 30 minutes!
+
 ### Prerequisites
 ```bash
 # Install system dependencies
