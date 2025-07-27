@@ -279,7 +279,8 @@ class ChromiumMCPServer {
 
   setupErrorHandling() {
     this.server.onerror = (error) => {
-      console.error('[MCP Error]', error);
+      // Log errors to stderr in a way that doesn't interfere with MCP protocol
+      process.stderr.write(`[MCP Error] ${error.message}\n`);
     };
 
     process.on('SIGINT', async () => {
@@ -296,9 +297,12 @@ class ChromiumMCPServer {
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('Chromium ARM64 MCP server running on stdio');
+    // MCP server started - no console output to avoid protocol interference
   }
 }
 
 const server = new ChromiumMCPServer();
-server.run().catch(console.error);
+server.run().catch(error => {
+  process.stderr.write(`Failed to start MCP server: ${error.message}\n`);
+  process.exit(1);
+});
