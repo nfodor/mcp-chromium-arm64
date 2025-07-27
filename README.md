@@ -1,4 +1,4 @@
-# >> No-Code AI SaaS Builder for Everyone
+# No-Code AI SaaS Builder for Everyone
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-ARM64%20%7C%20Raspberry%20Pi-green?style=for-the-badge" alt="Platform Support">
@@ -12,11 +12,9 @@
   <em>Democratizing AI-driven development for the global audience with limited budgets</em>
 </p>
 
-> ** Note**: If emoji icons aren't displaying properly on your system, see the [text-only version](docs/README-TEXT-ONLY.md) for better compatibility.
-
 ---
 
-## *** The Revolution: AI Development for Everyone
+## The Revolution: AI Development for Everyone
 
 **The Old Way**: Enterprise AI development required $50,000+ workstations, excluding 95% of global developers
 
