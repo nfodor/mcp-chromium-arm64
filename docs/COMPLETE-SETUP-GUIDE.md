@@ -201,37 +201,81 @@ claude
 
 ## 🎉 Step 7: Your First No-Code SaaS Project
 
-### Example: Price Monitoring Service
+### Real Example: Build & Test a Website Monitor
 
 1. **Start Claude CLI**:
    ```bash
    claude
    ```
 
-2. **Describe your SaaS idea**:
+2. **Copy & Paste This Exact Prompt**:
    ```
-   I want to build a price monitoring service that:
-   - Checks Amazon product prices daily
-   - Sends email alerts when prices drop
-   - Has a simple web dashboard
-   - Uses the chromium-arm64 browser automation
-   
-   Please help me build this step by step.
+   Help me build a simple website uptime monitoring app. Here's what I want:
+
+   1. A Node.js web server that shows a dashboard
+   2. Check if websites are up or down every 5 minutes
+   3. Use the chromium-arm64 browser automation to test sites
+   4. Show green/red status with timestamps
+   5. Start with monitoring these sites: google.com, github.com, stackoverflow.com
+
+   Please:
+   - Write all the code files I need
+   - Test it using chromium-arm64 browser automation
+   - Fix any issues you find during testing
+   - Show me how to run it
+   - Keep iterating until it works perfectly
+
+   Let's build this step by step and test each part as we go!
    ```
 
-3. **Watch AI Build Your SaaS**: Claude will:
-   - Write the scraping code
-   - Create the web interface
-   - Set up email notifications
-   - Test everything automatically
-   - Guide you through deployment
+3. **Watch the Magic Happen**: Claude will:
+   - ✅ Write the web server code
+   - ✅ Create the HTML dashboard
+   - ✅ Build the monitoring logic
+   - ✅ Test each website using chromium-arm64
+   - ✅ Fix any bugs automatically
+   - ✅ Show you the working result
+   - ✅ Iterate until perfect
 
-### More SaaS Ideas to Try
-- **SEO Rank Tracker**: Monitor keyword positions
-- **Website Uptime Monitor**: Alert when sites go down
-- **Social Media Tracker**: Monitor brand mentions
-- **Competitor Analysis**: Track pricing and features
-- **Lead Generator**: Extract contact information
+4. **Expected Result**: A working uptime monitor running on `http://localhost:3000`
+
+### More Ready-to-Use Prompts
+
+**🔍 SEO Rank Tracker**:
+```
+Build an SEO rank tracking tool that:
+1. Checks Google search rankings for specific keywords
+2. Uses chromium-arm64 to search Google and find positions
+3. Tracks keywords: "raspberry pi automation", "no code saas", "budget ai"
+4. Shows ranking changes over time in a web dashboard
+5. Saves data to a JSON file
+
+Test each search, fix any issues, and show me the working dashboard.
+```
+
+**💰 Price Monitor**:
+```
+Create a price monitoring service:
+1. Check product prices on Amazon and eBay
+2. Use chromium-arm64 to scrape prices
+3. Monitor these test products: [paste any product URLs]
+4. Alert when prices drop below target amounts
+5. Simple web interface to add/remove products
+
+Build, test, iterate until it works perfectly!
+```
+
+**📊 Social Media Monitor**:
+```
+Build a brand mention tracker:
+1. Search Twitter, Reddit, and news sites for mentions
+2. Track keywords like "claude code", "raspberry pi", "no code"
+3. Use chromium-arm64 for web scraping
+4. Show results in a clean dashboard
+5. Save findings to track trends over time
+
+Test with real searches and fix any issues found.
+```
 
 ---
 
