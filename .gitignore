@@ -1,0 +1,12 @@
+node_modules/
+*.log
+*.png
+*.jpg
+*.jpeg
+/tmp/
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.credentials.json
+chrome-headless-shell/
