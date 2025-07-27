@@ -100,9 +100,69 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node index.js
 python3 simple_browser.py
 ```
 
-### Add to Claude Code
+## 🎯 Claude CLI Integration
+
+### Prerequisites
 ```bash
-claude mcp add chromium-arm64 "node $(pwd)/index.js" --scope user
+# Install Claude CLI if you haven't already
+npm install -g @anthropic/claude-cli
+```
+
+### Add to Claude CLI
+```bash
+# From the project directory after cloning
+claude mcp add chromium-arm64 "$(pwd)/mcp-wrapper.sh" --scope user
+```
+
+### Verify Connection
+```bash
+claude mcp list
+# Should show: chromium-arm64: /path/to/mcp-wrapper.sh - ✓ Connected
+```
+
+### ⚠️ Important: Restart Claude After Adding
+**You MUST start a new Claude session after adding the MCP server:**
+```bash
+# Exit current session if in one
+exit
+# Start fresh session
+claude
+```
+
+### Using in Claude CLI
+
+**Ask Claude to use the chromium-arm64 tools:**
+```
+List available MCP servers and use chromium-arm64 to navigate to https://example.com
+
+Take a screenshot using the chromium-arm64 tool
+
+Use chromium-arm64 to click the button with selector #submit
+
+Fill the email field using chromium-arm64 with test@example.com
+```
+
+**Be explicit to avoid Playwright/Puppeteer:**
+- ✅ "Use chromium-arm64 to navigate..."
+- ✅ "Using the chromium-arm64 tool, take a screenshot"
+- ❌ "Open a browser" (might try broken Playwright)
+- ❌ "Take a screenshot" (might try broken Puppeteer)
+
+### 🎉 Success Example
+
+When working correctly, you'll see:
+```
+You: Use chromium-arm64 to navigate to https://httpbin.org/json and show me what you see
+
+Claude: I'll navigate to https://httpbin.org/json using the chromium-arm64 tool.
+
+[Uses chromium-arm64.navigate tool]
+
+The page displays a JSON object with a slideshow structure containing:
+- Author: "Yours Truly"
+- Date: "date of publication"
+- Title: "Sample Slide Show"
+...
 ```
 
 ## 📚 Usage Examples
@@ -305,6 +365,36 @@ graph TB
 ```
 
 ## 🐛 Troubleshooting
+
+### MCP Connection Issues
+
+**chromium-arm64 shows "✗ Failed to connect"**
+```bash
+# Check if the wrapper script exists and is executable
+ls -la $(pwd)/mcp-wrapper.sh
+chmod +x mcp-wrapper.sh
+
+# Test the server directly
+echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node index.js
+
+# Re-add with correct path
+claude mcp remove chromium-arm64
+claude mcp add chromium-arm64 "$(pwd)/mcp-wrapper.sh" --scope user
+
+# IMPORTANT: Restart Claude
+exit
+claude
+```
+
+**Claude tries to use Playwright/Puppeteer instead**
+- Be explicit: Always mention "chromium-arm64" in your prompts
+- Check available servers: `claude mcp list`
+- If chromium-arm64 isn't listed, restart Claude
+
+**"Server not found" in Claude session**
+- MCP servers are loaded at startup
+- Always restart Claude after adding/modifying MCP servers
+- Run `claude mcp list` to verify before starting
 
 ### Common Issues
 
