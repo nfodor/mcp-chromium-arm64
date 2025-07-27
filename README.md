@@ -496,10 +496,10 @@ MIT License - feel free to use in commercial projects!
 
 ## 📞 Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/claude-arm64-browser/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/claude-arm64-browser/discussions)
-- 📧 **Email**: support@yourdomain.com
-- 🐦 **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/nfodor/claude-arm64-browser/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/nfodor/claude-arm64-browser/discussions)
+- 📧 **Email**: github@fodor.app
+- 🌐 **Repository**: [github.com/nfodor/claude-arm64-browser](https://github.com/nfodor/claude-arm64-browser)
 
 ---
 
