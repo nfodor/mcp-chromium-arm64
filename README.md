@@ -1,4 +1,4 @@
-# 🚀 No-Code AI SaaS Builder for Everyone
+# >> No-Code AI SaaS Builder for Everyone
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-ARM64%20%7C%20Raspberry%20Pi-green?style=for-the-badge" alt="Platform Support">
@@ -12,102 +12,102 @@
   <em>Democratizing AI-driven development for the global audience with limited budgets</em>
 </p>
 
-> **📝 Note**: If emoji icons aren't displaying properly on your system, see the [text-only version](docs/README-TEXT-ONLY.md) for better compatibility.
+> ** Note**: If emoji icons aren't displaying properly on your system, see the [text-only version](docs/README-TEXT-ONLY.md) for better compatibility.
 
 ---
 
-## 🌍 The Revolution: AI Development for Everyone
+## *** The Revolution: AI Development for Everyone
 
 **The Old Way**: Enterprise AI development required $50,000+ workstations, excluding 95% of global developers
 
 **The New Way**: A $480 Raspberry Pi setup that gives you the same AI capabilities as Silicon Valley startups
 
-### 🎯 Why This Changes Everything
+### Why This Changes Everything
 
-💸 **Financial Barrier Removed**: What cost $50K now costs $480 (99% reduction)
-🌏 **Global Access**: Affordable in every country, not just Silicon Valley
-🚀 **No-Code Revolution**: AI builds your SaaS while you focus on customers
-🔧 **Complete Automation**: From idea to deployed app without manual coding
-⚡ **Instant Testing**: AI tests every feature before your users see it
+**Financial Barrier Removed**: What cost $50K now costs $480 (99% reduction)
+**Global Access**: Affordable in every country, not just Silicon Valley
+**No-Code Revolution**: AI builds your SaaS while you focus on customers
+**Complete Automation**: From idea to deployed app without manual coding
+**Instant Testing**: AI tests every feature before your users see it
 
-### 👥 Perfect For the Global Maker Movement
+### Perfect For the Global Maker Movement
 
-- 🌍 **International Entrepreneurs**: Access Silicon Valley AI tools on local budgets
-- 🎓 **Students & Educators**: Learn modern AI development without debt
-- 🏠 **Side Hustlers**: Build SaaS products while keeping your day job
-- 🌱 **Solo Founders**: Complete development team in a $80 device
-- 🤝 **Small Teams**: Compete with venture-funded startups
-- 🌐 **Remote Communities**: AI development anywhere with internet
+- **International Entrepreneurs**: Access Silicon Valley AI tools on local budgets
+- **Students & Educators**: Learn modern AI development without debt
+- **Side Hustlers**: Build SaaS products while keeping your day job
+- **Solo Founders**: Complete development team in a $80 device
+- **Small Teams**: Compete with venture-funded startups
+- **Remote Communities**: AI development anywhere with internet
 
-## 🚀 What You Can Build (No Coding Required!)
+## What You Can Build (No Coding Required!)
 
 ### AI-Driven SaaS Ideas That Actually Work
 
-**🏪 E-commerce Tools**
+**E-commerce Tools**
 - Price monitoring across thousands of competitors
 - Product research and market analysis
 - Automated inventory tracking
 - Customer sentiment analysis from reviews
 
-**📊 Business Intelligence**
+**Business Intelligence**
 - Social media monitoring dashboards
 - SEO rank tracking services
 - Lead generation and qualification
 - Competitor analysis platforms
 
-**🤖 Automation Services**
+**Automation Services**
 - Website uptime monitoring
 - Content verification and compliance
 - Data entry and processing
 - Form filling and submission services
 
-**🎯 Marketing Solutions**
+**Marketing Solutions**
 - A/B testing platforms
 - Landing page optimization
 - Email campaign monitoring
 - Social proof collection
 
-### 💡 The Magic: AI Does the Heavy Lifting
+### The Magic: AI Does the Heavy Lifting
 
-1. **🗣️ Describe Your Idea**: "I want to monitor competitor prices"
-2. **🤖 AI Writes the Code**: Claude builds the scraping logic
-3. **🧪 AI Tests Everything**: Automated browser testing ensures it works
-4. **🚀 Deploy & Scale**: Your SaaS is ready for customers
-5. **💰 Profit**: Focus on marketing while AI maintains the product
+1. **Describe Your Idea**: "I want to monitor competitor prices"
+2. **AI Writes the Code**: Claude builds the scraping logic
+3. **AI Tests Everything**: Automated browser testing ensures it works
+4. **Deploy & Scale**: Your SaaS is ready for customers
+5. **Profit**: Focus on marketing while AI maintains the product
 
 ---
 
-## ✨ What Makes This Special
+## What Makes This Special
 
-**🎯 No-Code SaaS Development**
+**No-Code SaaS Development**
 - Describe your app idea in plain English
 - AI writes, tests, and deploys your application
 - Focus on customers, not coding
 - Launch in days, not months
 
-**💰 Massive Cost Reduction**
+**Massive Cost Reduction**
 - $480 vs $50,000+ for traditional AI development
 - Same capabilities as Silicon Valley startups
 - No recurring cloud bills or licensing fees
 - Own your development infrastructure
 
-**🌍 Global Accessibility**
+**Global Accessibility**
 - Works anywhere with internet connection
 - Affordable in every country and currency
 - No technical background required
 - Complete tutorials and examples included
 
-**⚡ Instant Results**
+**Instant Results**
 - See your SaaS working in real-time
 - AI tests every feature automatically
 - No debugging or technical troubleshooting
 - Deploy to customers the same day
 
-## 🚀 Quick Start
+## Quick Start
 
-### 📚 Complete Beginner Guide
+### Complete Beginner Guide
 **Never set up a Raspberry Pi before?** 
-👉 **[COMPLETE SETUP GUIDE](docs/COMPLETE-SETUP-GUIDE.md)** - Step-by-step from zero to SaaS builder in 30 minutes!
+**[COMPLETE SETUP GUIDE](docs/COMPLETE-SETUP-GUIDE.md)** - Step-by-step from zero to SaaS builder in 30 minutes!
 
 ### Prerequisites
 ```bash
@@ -127,14 +127,14 @@ npm install
 chmod +x *.py *.sh
 ```
 
-### ⚡ Quick Test (One-Liner)
+### Quick Test (One-Liner)
 ```bash
 # Verify it works immediately after install:
-python3 -c "import sys; sys.path.append('.'); import arm64_browser; print('✅ ARM64 Browser Works!' if 'error' not in arm64_browser.navigate('https://example.com').lower() else '❌ Failed')"
+python3 -c "import sys; sys.path.append('.'); import arm64_browser; print('[OK] ARM64 Browser Works!' if 'error' not in arm64_browser.navigate('https://example.com').lower() else '[FAIL] Failed')"
 ```
-**Expected Result:** `✅ ARM64 Browser Works!`
+**Expected Result:** `[OK] ARM64 Browser Works!`
 
-### 🎬 Run the Kick-Ass Demo
+### >>> Run the Kick-Ass Demo
 ```bash
 # Quick demo with immediate visible results (30 seconds)
 python3 instant_demo.py
@@ -152,7 +152,7 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node index.js
 python3 simple_browser.py
 ```
 
-## 🎯 Claude CLI Integration
+##  Claude CLI Integration
 
 ### Prerequisites
 ```bash
@@ -195,12 +195,12 @@ Fill the email field using chromium-arm64 with test@example.com
 ```
 
 **Be explicit to avoid Playwright/Puppeteer:**
-- ✅ "Use chromium-arm64 to navigate..."
-- ✅ "Using the chromium-arm64 tool, take a screenshot"
-- ❌ "Open a browser" (might try broken Playwright)
-- ❌ "Take a screenshot" (might try broken Puppeteer)
+-  "Use chromium-arm64 to navigate..."
+-  "Using the chromium-arm64 tool, take a screenshot"
+-  "Open a browser" (might try broken Playwright)
+-  "Take a screenshot" (might try broken Puppeteer)
 
-### 🎉 Success Example
+###  Success Example
 
 When working correctly, you'll see:
 ```
@@ -217,7 +217,7 @@ The page displays a JSON object with a slideshow structure containing:
 ...
 ```
 
-## 📚 Usage Examples
+##  Usage Examples
 
 ### Python API
 ```python
@@ -250,7 +250,7 @@ Once configured, use these tools directly in Claude Code:
 - `get_content` - Extract page HTML/text
 - `close_browser` - Clean shutdown
 
-## 🎯 Real-World Use Cases
+##  Real-World Use Cases
 
 ### 1. **End-to-End SaaS Testing (The Game Changer)**
 ```python
@@ -338,25 +338,25 @@ simple_browser.browser_screenshot("serp_results.png")
 rankings = simple_browser.browser_evaluate("document.querySelector('.g').textContent")
 ```
 
-## 💡 Why ARM64 + Browser Automation = SaaS Gold
+##  Why ARM64 + Browser Automation = SaaS Gold
 
 ### The Critical Gap in SaaS Development
 **Every SaaS startup MUST ensure their application works end-to-end before shipping.** Traditional approaches fail because:
 
-- **❌ Manual Testing**: Expensive, slow, error-prone, doesn't scale
-- **❌ x86_64 Only Tools**: Puppeteer/Playwright fail on ARM64 with broken binaries
-- **❌ Human Debugging**: QA teams spend days debugging test failures
-- **❌ Limited Coverage**: Can't test every user journey without massive teams
-- **❌ Regression Blind Spots**: Changes break existing features without detection
+- ** Manual Testing**: Expensive, slow, error-prone, doesn't scale
+- ** x86_64 Only Tools**: Puppeteer/Playwright fail on ARM64 with broken binaries
+- ** Human Debugging**: QA teams spend days debugging test failures
+- ** Limited Coverage**: Can't test every user journey without massive teams
+- ** Regression Blind Spots**: Changes break existing features without detection
 
 ### Our Breakthrough: Autonomous AI Testing on ARM64
-- ✅ **Zero Human Debugging**: AI agents test complete user flows autonomously
-- ✅ **24/7 Continuous Testing**: Always-on validation on budget hardware  
-- ✅ **Full Stack Coverage**: Frontend + Backend + API validation through real browser
-- ✅ **Visual Regression Detection**: Screenshots catch UI breaking changes automatically
-- ✅ **Cross-Device Testing**: Mobile/tablet/desktop viewport automation
-- ✅ **Native ARM64**: Uses system Chromium instead of broken x86_64 binaries
-- ✅ **Cost Effective**: $480 setup vs $50K+ traditional QA infrastructure
+-  **Zero Human Debugging**: AI agents test complete user flows autonomously
+-  **24/7 Continuous Testing**: Always-on validation on budget hardware  
+-  **Full Stack Coverage**: Frontend + Backend + API validation through real browser
+-  **Visual Regression Detection**: Screenshots catch UI breaking changes automatically
+-  **Cross-Device Testing**: Mobile/tablet/desktop viewport automation
+-  **Native ARM64**: Uses system Chromium instead of broken x86_64 binaries
+-  **Cost Effective**: $480 setup vs $50K+ traditional QA infrastructure
 
 ### Why This Changes SaaS Development Forever
 
@@ -377,7 +377,7 @@ Standard browser automation fails on ARM64 because Puppeteer/Playwright download
 - MCP protocol compliance for Claude Code integration
 - Zero dependency on pre-built browser binaries
 
-## 📊 Architecture
+##  Architecture
 
 ```mermaid
 graph TB
@@ -416,7 +416,7 @@ graph TB
 }
 ```
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### MCP Connection Issues
 
@@ -478,7 +478,7 @@ htop
 # Add to browser args: '--memory-pressure-off', '--max_old_space_size=512'
 ```
 
-## 💰 Complete Startup AI Setup - Under $500
+##  Complete Startup AI Setup - Under $500
 
 Build a complete AI-powered development environment for less than a high-end graphics card:
 
@@ -493,37 +493,37 @@ Build a complete AI-powered development environment for less than a high-end gra
 | **Total** | **Complete AI Workstation** | **$480** |
 
 ### What You Get:
-- 🖥️ **Portable AI Workstation**: Desktop-class performance in a 4"×3" footprint
-- 🧠 **Claude Sonnet 4 Access**: Latest AI model with 200K context window
-- 🌐 **Browser Automation**: Web scraping, testing, monitoring capabilities
-- 🔄 **24/7 Operation**: Always-on AI assistant and automation
-- ⚡ **Low Power**: 15W total system power (vs 500W+ traditional setup)
-- 🏠 **Silent Operation**: No fans, completely quiet
-- 📱 **Touch Interface**: Direct interaction with built-in display
+-  **Portable AI Workstation**: Desktop-class performance in a 4"×3" footprint
+- **Claude Sonnet 4 Access**: Latest AI model with 200K context window
+-  **Browser Automation**: Web scraping, testing, monitoring capabilities
+-  **24/7 Operation**: Always-on AI assistant and automation
+-  **Low Power**: 15W total system power (vs 500W+ traditional setup)
+-  **Silent Operation**: No fans, completely quiet
+-  **Touch Interface**: Direct interaction with built-in display
 
 ### ROI for Startups:
-- **🧪 Autonomous Testing**: AI agents test entire SaaS flows without human debugging - saves 40+ hours/week
-- **🔄 Continuous Validation**: 24/7 monitoring ensures your app works before customers find bugs
-- **💰 QA Cost Savings**: Replace expensive manual testing teams with automated AI validation
-- **🚀 Faster Shipping**: Deploy with confidence knowing AI has tested all user journeys
-- **🎯 Zero Regression**: Automated visual and functional testing prevents breaking changes
-- **📊 Market Research**: Automated competitor analysis saves 20+ hours/week
-- **🤖 Customer Support**: AI-powered response generation and testing
-- **📝 Content Creation**: Automated social media monitoring and content ideas
-- **⚡ Product Development**: AI-assisted coding and rapid prototyping
+- ** Autonomous Testing**: AI agents test entire SaaS flows without human debugging - saves 40+ hours/week
+- ** Continuous Validation**: 24/7 monitoring ensures your app works before customers find bugs
+- ** QA Cost Savings**: Replace expensive manual testing teams with automated AI validation
+- ** Faster Shipping**: Deploy with confidence knowing AI has tested all user journeys
+- ** Zero Regression**: Automated visual and functional testing prevents breaking changes
+- ** Market Research**: Automated competitor analysis saves 20+ hours/week
+- ** Customer Support**: AI-powered response generation and testing
+- ** Content Creation**: Automated social media monitoring and content ideas
+- ** Product Development**: AI-assisted coding and rapid prototyping
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! This project democratizes AI access for startups and makers.
 
 ### Areas for Contribution:
-- 📱 Mobile browser support (Android/iOS testing)
-- 🔧 Additional MCP tools and integrations  
-- 📊 Performance optimizations for Pi Zero/smaller devices
-- 🎨 UI/UX improvements for touch interface
-- 📚 Tutorial content and use-case examples
+-  Mobile browser support (Android/iOS testing)
+-  Additional MCP tools and integrations  
+-  Performance optimizations for Pi Zero/smaller devices
+-  UI/UX improvements for touch interface
+-  Tutorial content and use-case examples
 
 ### Development Setup:
 ```bash
@@ -533,11 +533,11 @@ npm install
 # No development server needed - ready to use!
 ```
 
-## 📄 License
+##  License
 
 MIT License - feel free to use in commercial projects!
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Anthropic** for Claude Code and MCP protocol
 - **Raspberry Pi Foundation** for democratizing computing
@@ -546,17 +546,17 @@ MIT License - feel free to use in commercial projects!
 
 ---
 
-## 📞 Support & Community
+##  Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/nfodor/claude-arm64-browser/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/nfodor/claude-arm64-browser/discussions)
-- 📧 **Email**: github@fodor.app
-- 🌐 **Repository**: [github.com/nfodor/claude-arm64-browser](https://github.com/nfodor/claude-arm64-browser)
+-  **Issues**: [GitHub Issues](https://github.com/nfodor/claude-arm64-browser/issues)
+-  **Discussions**: [GitHub Discussions](https://github.com/nfodor/claude-arm64-browser/discussions)
+-  **Email**: github@fodor.app
+-  **Repository**: [github.com/nfodor/claude-arm64-browser](https://github.com/nfodor/claude-arm64-browser)
 
 ---
 
 <p align="center">
-  <strong>⭐ Star this repo if it helps your startup leverage AI on a budget!</strong><br>
+  <strong> Star this repo if it helps your startup leverage AI on a budget!</strong><br>
   <em>Every star helps more developers discover affordable AI solutions</em>
 </p>
 
