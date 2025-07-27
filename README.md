@@ -475,10 +475,10 @@ We welcome contributions! This project democratizes AI access for startups and m
 
 ### Development Setup:
 ```bash
-git clone https://github.com/yourusername/claude-arm64-browser
+git clone https://github.com/nfodor/claude-arm64-browser
 cd claude-arm64-browser
 npm install
-npm run dev
+# No development server needed - ready to use!
 ```
 
 ## 📄 License
