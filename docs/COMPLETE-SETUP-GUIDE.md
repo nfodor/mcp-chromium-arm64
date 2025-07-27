@@ -227,6 +227,8 @@ claude
 
    **MANDATORY TESTING PROTOCOL:**
    - When testing the web interface, you MUST use chromium-arm64 browser automation tools
+   - DO NOT use playwright or puppeteer - they require browser installation on ARM64
+   - Use ONLY chromium-arm64 tools that work with system Chromium
    - Navigate to http://localhost:3000 and take screenshots
    - Click buttons and test the interface visually
    - NO CURL ALLOWED for UI testing - use browser automation only
@@ -240,6 +242,14 @@ claude
    - Screenshot all data displays to prove they work
    - Verify data persistence - refresh page and confirm data remains
    - Test any export, download, or data manipulation features
+
+   **CONSOLE ERROR CHECKING:**
+   - Check browser console for JavaScript errors using chromium-arm64 tools
+   - If chromium-arm64 doesn't have console access, use browser evaluate to check for errors
+   - Report any CSP violations or security errors
+   - Verify NO console errors exist during testing
+   - Use evaluate("console.error.toString()") or similar to check for JS errors
+   - Screenshot any error messages found in the interface
 
    Let's build this step by step and test each part properly with complete data verification!
    ```
@@ -267,13 +277,15 @@ Build an SEO rank tracking tool that:
 5. Saves data to a JSON file
 
 **MANDATORY TESTING:**
-- Use chromium-arm64 browser automation to test the dashboard
+- Use chromium-arm64 browser automation to test the dashboard (NOT playwright/puppeteer)
 - Navigate to the web interface and take screenshots
 - NO CURL - use browser tools only
 - Verify ranking data displays correctly in the GUI
 - Test keyword input forms and search functionality
 - Screenshot the ranking charts/tables to prove they work
 - Verify data saves and persists between page refreshes
+- Check for JavaScript errors using evaluate() to inspect console
+- Report any CSP violations or script loading failures
 
 Test each search, fix any issues, and show me the working dashboard with visual proof.
 ```
@@ -288,13 +300,15 @@ Create a price monitoring service:
 5. Simple web interface to add/remove products
 
 **MANDATORY TESTING:**
-- Use chromium-arm64 browser automation tools only
+- Use chromium-arm64 browser automation tools only (NOT playwright/puppeteer)
 - Navigate to the web interface and take screenshots
 - Test the add/remove product forms visually
 - Verify price data displays correctly in tables/charts
 - Check that alerts and notifications work in the UI
 - Screenshot all data displays and product management interfaces
 - NO CURL for UI testing
+- Check for JavaScript errors using evaluate() to inspect console
+- Report any CSP violations or script loading failures
 
 Build, test, iterate until it works perfectly with complete visual verification!
 ```
@@ -309,7 +323,7 @@ Build a brand mention tracker:
 5. Save findings to track trends over time
 
 **MANDATORY TESTING:**
-- Use chromium-arm64 browser automation to verify the dashboard
+- Use chromium-arm64 browser automation to verify the dashboard (NOT playwright/puppeteer)
 - Navigate to the interface and take screenshots of ALL data displays
 - Test search forms, keyword inputs, and filters visually
 - Verify mention data appears correctly in tables/lists
@@ -317,6 +331,8 @@ Build a brand mention tracker:
 - Test any export or download features
 - Screenshot every data-driven component to prove it works
 - NO CURL - browser automation only
+- Check for JavaScript errors using evaluate() to inspect console
+- Report any CSP violations or script loading failures
 
 Test with real searches and fix any issues found with complete data verification.
 ```
