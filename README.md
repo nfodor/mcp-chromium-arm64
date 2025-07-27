@@ -69,11 +69,18 @@ chromium-browser --version
 
 ### Installation
 ```bash
-git clone https://github.com/yourusername/claude-arm64-browser
+git clone https://github.com/nfodor/claude-arm64-browser
 cd claude-arm64-browser
 npm install
-chmod +x index.js simple_browser.py demo.py run_demo.sh
+chmod +x *.py *.sh
 ```
+
+### ⚡ Quick Test (One-Liner)
+```bash
+# Verify it works immediately after install:
+python3 -c "import sys; sys.path.append('.'); import arm64_browser; print('✅ ARM64 Browser Works!' if 'error' not in arm64_browser.navigate('https://example.com').lower() else '❌ Failed')"
+```
+**Expected Result:** `✅ ARM64 Browser Works!`
 
 ### 🎬 Run the Kick-Ass Demo
 ```bash
