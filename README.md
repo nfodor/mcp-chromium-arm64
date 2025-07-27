@@ -12,6 +12,8 @@
   <em>Democratizing AI-driven development for the global audience with limited budgets</em>
 </p>
 
+> **📝 Note**: If emoji icons aren't displaying properly on your system, see the [text-only version](docs/README-TEXT-ONLY.md) for better compatibility.
+
 ---
 
 ## 🌍 The Revolution: AI Development for Everyone
