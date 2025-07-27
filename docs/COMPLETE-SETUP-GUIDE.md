@@ -225,33 +225,42 @@ claude
    - Show me how to run it
    - Keep iterating until it works perfectly
 
-   **MANDATORY TESTING PROTOCOL:**
-   - When testing the web interface, you MUST use chromium-arm64 browser automation tools
-   - DO NOT use playwright or puppeteer - they require browser installation on ARM64
-   - Use ONLY chromium-arm64 tools that work with system Chromium
+   **MANDATORY ERROR DETECTION PROTOCOL:**
+   - Use chromium-arm64 get_content to check ALL page text for error messages
+   - Use chromium-arm64 evaluate to check console.error logs
+   - Search for "Error", "Failed", "404", "500", "undefined", "null", "Loading..." in ALL outputs
+   - Check browser network for failed requests
+   - Verify ALL JavaScript functions exist before claiming success
+   - Screenshot AND text-check every interface state
+   - Test functionality, don't just verify visual appearance
+   - NO TASK MARKED COMPLETE until zero errors found in logs, console, and page content
+
+   **SPECIFIC ERROR CHECKS REQUIRED:**
+   - Console errors: CSP violations, script loading failures, undefined functions
+   - Page content: Any text containing "Error", "Failed", "Loading..." stuck states
+   - Network: 404s, 500s, failed API calls, missing resources
+   - JavaScript: Check typeof for all expected functions and objects
+   - Functionality: Actually click buttons and verify they work, don't just screenshot
+
+   **VERIFICATION CHECKLIST:**
+   □ Browser console shows zero errors
+   □ Page text contains no "Error" messages
+   □ All API calls return 200 status
+   □ All JavaScript functions defined
+   □ All external resources load successfully
+   □ No 404s in network tab
+   □ All buttons/forms actually functional when clicked
+   □ Screenshots show working interface WITH verified functionality
+
+   **TESTING PROTOCOL:**
+   - Use ONLY chromium-arm64 tools (NOT playwright/puppeteer)
    - Navigate to http://localhost:3000 and take screenshots
    - Click buttons and test the interface visually
    - NO CURL ALLOWED for UI testing - use browser automation only
-   - Provide visual proof the dashboard works with screenshots
+   - Search ALL page content for error keywords
+   - Verify functionality, not just appearance
 
-   **DATA VERIFICATION REQUIREMENTS:**
-   - Verify ALL data-driven components display correctly in the GUI
-   - Test every UI interface that allows data to be saved or displayed
-   - Check that timestamps, status indicators, and site names appear properly
-   - Test any forms, filters, or display toggles that change how data is shown
-   - Screenshot all data displays to prove they work
-   - Verify data persistence - refresh page and confirm data remains
-   - Test any export, download, or data manipulation features
-
-   **CONSOLE ERROR CHECKING:**
-   - Check browser console for JavaScript errors using chromium-arm64 tools
-   - If chromium-arm64 doesn't have console access, use browser evaluate to check for errors
-   - Report any CSP violations or security errors
-   - Verify NO console errors exist during testing
-   - Use evaluate("console.error.toString()") or similar to check for JS errors
-   - Screenshot any error messages found in the interface
-
-   Let's build this step by step and test each part properly with complete data verification!
+   Let's build this step by step with ZERO tolerance for errors!
    ```
 
 3. **Watch the Magic Happen**: Claude will:
@@ -264,6 +273,27 @@ claude
    - ✅ Iterate until perfect
 
 4. **Expected Result**: A working uptime monitor running on `http://localhost:3000`
+
+### Why This Prompt Works So Well
+
+**🎯 Prevents False Success Claims**
+- "NO TASK MARKED COMPLETE until zero errors found" forces thorough verification
+- AI can't claim something works if errors exist anywhere
+
+**🔍 Catches Hidden Errors**
+- Text content scanning finds "Error loading..." messages
+- Console error checking catches JavaScript failures
+- Function existence verification prevents CSP issues
+
+**✅ Forces Real Testing**
+- "Test functionality, don't just verify appearance" 
+- "Actually click buttons and verify they work"
+- Prevents screenshot-only fake testing
+
+**🚫 Zero Tolerance Approach**
+- "ZERO tolerance for errors" sets the standard
+- Comprehensive checklist prevents shortcuts
+- Multiple verification methods catch all issues
 
 ### More Ready-to-Use Prompts
 
