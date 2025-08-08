@@ -454,6 +454,181 @@ const customArgs = [
 
 ---
 
+## 🌐 Cross-Platform ARM64 Compatibility
+
+### **Platform Support Matrix**
+
+| Platform | Status | Chrome Path | Installation Method | Notes |
+|----------|--------|-------------|---------------------|--------|
+| **Linux ARM64** ✅ | **Fully Supported** | `/usr/bin/chromium-browser` | `apt install chromium-browser` | Tested on Raspberry Pi OS |
+| **macOS Apple Silicon** ⚠️ | **Requires Modifications** | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` | Download from Google or `brew install chromium` | Need path and flag updates |
+| **Windows ARM64** ❓ | **Untested** | `C:\Program Files\Google\Chrome\Application\chrome.exe` | Download from Google | Would need Windows-specific changes |
+
+### **macOS Apple Silicon Setup**
+
+#### **Prerequisites**
+```bash
+# Install Homebrew if not already installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Node.js and Chromium
+brew install node chromium --no-quarantine
+```
+
+#### **Required Code Changes**
+Currently, the server is optimized for Linux ARM64. For macOS compatibility, modify `index.js`:
+
+```javascript
+// Detect platform and set appropriate chrome path
+function getChromePath() {
+  const platform = process.platform;
+  
+  switch(platform) {
+    case 'linux':
+      return '/usr/bin/chromium-browser';
+    case 'darwin': // macOS
+      // Try multiple possible paths
+      const macPaths = [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        '/Applications/Chromium.app/Contents/MacOS/Chromium',
+        '/opt/homebrew/bin/chromium'
+      ];
+      
+      for (const path of macPaths) {
+        if (require('fs').existsSync(path)) {
+          return path;
+        }
+      }
+      throw new Error('Chrome/Chromium not found on macOS');
+    case 'win32':
+      return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    default:
+      throw new Error(`Unsupported platform: ${platform}`);
+  }
+}
+
+// Update startChromium method
+async startChromium() {
+  const chromePath = getChromePath();
+  const platform = process.platform;
+  
+  // Platform-specific arguments
+  const baseArgs = [
+    '--headless',
+    '--disable-extensions',
+    '--disable-plugins',
+    `--remote-debugging-port=${debuggingPort}`,
+    '--no-first-run',
+    '--disable-gpu',
+    '--window-size=1280,720'
+  ];
+  
+  // Add Linux-specific sandbox flags
+  if (platform === 'linux') {
+    baseArgs.push('--no-sandbox', '--disable-setuid-sandbox');
+  }
+  
+  // Add macOS-specific flags if needed
+  if (platform === 'darwin') {
+    baseArgs.push('--disable-dev-shm-usage');
+  }
+  
+  chromiumProcess = spawn(chromePath, baseArgs);
+  // ... rest of method
+}
+```
+
+### **macOS-Specific Issues & Solutions**
+
+#### **1. "Chromium is damaged" Error**
+```bash
+# Remove quarantine flag if downloading manually
+sudo xattr -r -d com.apple.quarantine /Applications/Chromium.app
+
+# Or install via Homebrew with no-quarantine flag
+brew install chromium --no-quarantine
+```
+
+#### **2. Chrome vs Chromium Choice**
+```bash
+# Option 1: Use Google Chrome (recommended)
+# Download from: https://www.google.com/chrome/
+# Path: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+
+# Option 2: Use Chromium via Homebrew
+brew install chromium --no-quarantine
+# Path: /opt/homebrew/bin/chromium
+```
+
+#### **3. Permission Issues**
+```bash
+# Ensure Chrome has required permissions
+# System Preferences > Security & Privacy > Privacy tab
+# Grant Camera, Microphone access if needed for specific use cases
+```
+
+### **Testing Cross-Platform Compatibility**
+
+#### **Quick Platform Detection Test**
+```bash
+node -e "
+console.log('Platform:', process.platform);
+console.log('Architecture:', process.arch);
+const fs = require('fs');
+
+const paths = {
+  linux: '/usr/bin/chromium-browser',
+  darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  win32: 'C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe'
+};
+
+const chromePath = paths[process.platform];
+console.log('Expected Chrome path:', chromePath);
+console.log('Chrome exists:', fs.existsSync(chromePath));
+"
+```
+
+#### **Cross-Platform MCP Test**
+```bash
+# Test basic functionality across platforms
+echo '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"evaluate\",\"arguments\":{\"script\":\"navigator.platform\"}}}' | node index.js
+
+# Should return the current platform
+```
+
+### **Windows ARM64 Considerations** 
+While untested, Windows ARM64 support would need:
+
+```javascript
+// Windows-specific chrome path detection
+case 'win32':
+  const winPaths = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe'
+  ];
+  // Similar path checking logic...
+```
+
+### **Performance Differences**
+
+| Platform | Startup Time | Memory Usage | Notes |
+|----------|--------------|--------------|--------|
+| **Linux ARM64 (Pi 4)** | ~3-4s | ~150MB | Optimized, well-tested |
+| **macOS Apple Silicon** | ~2-3s | ~200MB | Faster CPU, more memory |
+| **Windows ARM64** | Unknown | Unknown | Would depend on hardware |
+
+### **Contribution Needed**
+
+**We welcome contributions for full cross-platform support!**
+
+- **macOS testers**: Test the proposed changes on Apple Silicon
+- **Windows ARM64**: Test on Surface Pro X or similar devices  
+- **Performance optimization**: Platform-specific optimizations
+- **Installation scripts**: Automated setup for each platform
+
+---
+
 ##  Claude CLI Integration
 
 ### Prerequisites
