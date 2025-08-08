@@ -1,15 +1,15 @@
-# MCP Chromium Server for ARM64
+# MCP Chromium ARM64 Server
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-ARM64%20%7C%20Raspberry%20Pi-green?style=for-the-badge" alt="Platform Support">
-  <img src="https://img.shields.io/badge/Claude%20Code-Compatible-blue?style=for-the-badge" alt="Claude Code">
+  <img src="https://img.shields.io/badge/MCP%20Protocol-1.0%20Compatible-blue?style=for-the-badge" alt="MCP Compatible">
+  <img src="https://img.shields.io/badge/Platform-ARM64%20Cross--Platform-green?style=for-the-badge" alt="Platform Support">
   <img src="https://img.shields.io/badge/Chrome%20DevTools%20Protocol-Native-red?style=for-the-badge" alt="CDP">
   <img src="https://img.shields.io/badge/Version-1.3.0%20Direct%20CDP-purple?style=for-the-badge" alt="Version">
 </p>
 
 <p align="center">
-  <strong>Native ARM64 browser automation using Chrome DevTools Protocol</strong><br>
-  <em>Direct system chromium control without Puppeteer dependencies</em>
+  <strong>Cross-platform ARM64 browser automation via Chrome DevTools Protocol</strong><br>
+  <em>Native Chromium control with 22 MCP tools for Linux, macOS, and Windows ARM64</em>
 </p>
 
 ## 🚀 Two Implementation Approaches Available
@@ -161,8 +161,8 @@ chromium-browser --version
 
 ### Installation
 ```bash
-git clone https://github.com/nfodor/claude-arm64-browser
-cd claude-arm64-browser
+git clone https://github.com/nfodor/mcp-chromium-arm64
+cd mcp-chromium-arm64
 npm install
 chmod +x *.py *.sh
 ```
@@ -1004,8 +1004,8 @@ We welcome contributions! This project democratizes AI access for startups and m
 
 ### Development Setup:
 ```bash
-git clone https://github.com/nfodor/claude-arm64-browser
-cd claude-arm64-browser
+git clone https://github.com/nfodor/mcp-chromium-arm64
+cd mcp-chromium-arm64
 npm install
 # No development server needed - ready to use!
 ```
@@ -1025,10 +1025,10 @@ MIT License - feel free to use in commercial projects!
 
 ##  Support & Community
 
--  **Issues**: [GitHub Issues](https://github.com/nfodor/claude-arm64-browser/issues)
--  **Discussions**: [GitHub Discussions](https://github.com/nfodor/claude-arm64-browser/discussions)
+-  **Issues**: [GitHub Issues](https://github.com/nfodor/mcp-chromium-arm64/issues)
+-  **Discussions**: [GitHub Discussions](https://github.com/nfodor/mcp-chromium-arm64/discussions)
 -  **Email**: github@fodor.app
--  **Repository**: [github.com/nfodor/claude-arm64-browser](https://github.com/nfodor/claude-arm64-browser)
+-  **Repository**: [github.com/nfodor/mcp-chromium-arm64](https://github.com/nfodor/mcp-chromium-arm64)
 
 ---
 

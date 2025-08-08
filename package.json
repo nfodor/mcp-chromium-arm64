@@ -1,7 +1,7 @@
 {
   "name": "mcp-chromium-arm64",
   "version": "1.3.0",
-  "description": "MCP server for Chrome automation on ARM64 using system Chromium",
+  "description": "Cross-platform ARM64 MCP server for Chromium browser automation using Chrome DevTools Protocol",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -15,9 +15,16 @@
   "keywords": [
     "mcp",
     "chrome",
+    "chromium",
     "automation",
     "arm64",
-    "aarch64"
+    "aarch64",
+    "apple-silicon",
+    "raspberry-pi",
+    "cross-platform",
+    "devtools-protocol",
+    "browser-automation",
+    "websocket"
   ],
   "author": "Claude Code",
   "license": "MIT"
