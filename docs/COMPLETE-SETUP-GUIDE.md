@@ -306,18 +306,28 @@ Build an SEO rank tracking tool that:
 4. Shows ranking changes over time in a web dashboard
 5. Saves data to a JSON file
 
-**MANDATORY TESTING:**
-- Use chromium-arm64 browser automation to test the dashboard (NOT playwright/puppeteer)
-- Navigate to the web interface and take screenshots
-- NO CURL - use browser tools only
-- Verify ranking data displays correctly in the GUI
-- Test keyword input forms and search functionality
-- Screenshot the ranking charts/tables to prove they work
-- Verify data saves and persists between page refreshes
-- Check for JavaScript errors using evaluate() to inspect console
-- Report any CSP violations or script loading failures
+**MANDATORY ERROR DETECTION PROTOCOL:**
+- Use chromium-arm64 get_content to check ALL page text for error messages
+- Use chromium-arm64 evaluate to check console.error logs
+- Search for "Error", "Failed", "404", "500", "undefined", "null", "Loading..." in ALL outputs
+- Verify ALL JavaScript functions exist before claiming success
+- NO TASK MARKED COMPLETE until zero errors found
 
-Test each search, fix any issues, and show me the working dashboard with visual proof.
+**VERIFICATION CHECKLIST:**
+□ Browser console shows zero errors
+□ Page text contains no "Error" messages
+□ All ranking data displays correctly
+□ All JavaScript functions defined
+□ All buttons/forms actually functional when clicked
+□ Data persists between page refreshes
+
+**TESTING PROTOCOL:**
+- Use ONLY chromium-arm64 tools (NOT playwright/puppeteer)
+- Test functionality, don't just verify appearance
+- Actually click buttons and verify they work
+- Search ALL page content for error keywords
+
+Test with ZERO tolerance for errors!
 ```
 
 **Price Monitor**:
@@ -329,18 +339,47 @@ Create a price monitoring service:
 4. Alert when prices drop below target amounts
 5. Simple web interface to add/remove products
 
-**MANDATORY TESTING:**
-- Use chromium-arm64 browser automation tools only (NOT playwright/puppeteer)
-- Navigate to the web interface and take screenshots
-- Test the add/remove product forms visually
-- Verify price data displays correctly in tables/charts
-- Check that alerts and notifications work in the UI
-- Screenshot all data displays and product management interfaces
-- NO CURL for UI testing
-- Check for JavaScript errors using evaluate() to inspect console
-- Report any CSP violations or script loading failures
+**MANDATORY ERROR DETECTION PROTOCOL:**
+- Use chromium-arm64 get_content to check ALL page text for error messages
+- Use chromium-arm64 evaluate to check console.error logs
+- Search for "Error", "Failed", "404", "500", "undefined", "null", "Loading..." in ALL outputs
+- Check browser network for failed requests
+- Verify ALL JavaScript functions exist before claiming success
+- Screenshot AND text-check every interface state
+- Test functionality, don't just verify visual appearance
+- NO TASK MARKED COMPLETE until zero errors found in logs, console, and page content
 
-Build, test, iterate until it works perfectly with complete visual verification!
+**SPECIFIC ERROR CHECKS REQUIRED:**
+- Console errors: CSP violations, script loading failures, undefined functions
+- Page content: Any text containing "Error", "Failed", "Loading..." stuck states
+- Network: 404s, 500s, failed API calls, missing resources
+- JavaScript: Check typeof for all expected functions and objects
+- Functionality: Actually click buttons and verify they work, don't just screenshot
+- Data verification: Verify price data displays correctly and persists
+- Form testing: Actually submit forms and verify data saves
+
+**VERIFICATION CHECKLIST:**
+□ Browser console shows zero errors
+□ Page text contains no "Error" messages
+□ All API calls return 200 status
+□ All JavaScript functions defined
+□ All external resources load successfully
+□ No 404s in network tab
+□ All buttons/forms actually functional when clicked
+□ Price data displays correctly in tables/charts
+□ Add/remove product forms work and persist data
+□ Alerts and notifications actually trigger
+□ Screenshots show working interface WITH verified functionality
+
+**TESTING PROTOCOL:**
+- Use ONLY chromium-arm64 tools (NOT playwright/puppeteer)
+- Navigate to http://localhost:3000 and take screenshots
+- Click buttons and test the interface visually
+- NO CURL ALLOWED for UI testing - use browser automation only
+- Search ALL page content for error keywords
+- Verify functionality, not just appearance
+
+Build, test, iterate until it works perfectly with ZERO tolerance for errors!
 ```
 
 **Social Media Monitor**:
@@ -352,19 +391,49 @@ Build a brand mention tracker:
 4. Show results in a clean dashboard
 5. Save findings to track trends over time
 
-**MANDATORY TESTING:**
-- Use chromium-arm64 browser automation to verify the dashboard (NOT playwright/puppeteer)
-- Navigate to the interface and take screenshots of ALL data displays
-- Test search forms, keyword inputs, and filters visually
-- Verify mention data appears correctly in tables/lists
-- Check trend charts and historical data displays
-- Test any export or download features
-- Screenshot every data-driven component to prove it works
-- NO CURL - browser automation only
-- Check for JavaScript errors using evaluate() to inspect console
-- Report any CSP violations or script loading failures
+**MANDATORY ERROR DETECTION PROTOCOL:**
+- Use chromium-arm64 get_content to check ALL page text for error messages
+- Use chromium-arm64 evaluate to check console.error logs
+- Search for "Error", "Failed", "404", "500", "undefined", "null", "Loading..." in ALL outputs
+- Check browser network for failed requests
+- Verify ALL JavaScript functions exist before claiming success
+- Screenshot AND text-check every interface state
+- Test functionality, don't just verify visual appearance
+- NO TASK MARKED COMPLETE until zero errors found in logs, console, and page content
 
-Test with real searches and fix any issues found with complete data verification.
+**SPECIFIC ERROR CHECKS REQUIRED:**
+- Console errors: CSP violations, script loading failures, undefined functions
+- Page content: Any text containing "Error", "Failed", "Loading..." stuck states
+- Network: 404s, 500s, failed API calls, missing resources
+- JavaScript: Check typeof for all expected functions and objects
+- Functionality: Actually click buttons and verify they work, don't just screenshot
+- Data verification: Verify mention data displays correctly from all sources
+- Search testing: Actually submit searches and verify results appear
+
+**VERIFICATION CHECKLIST:**
+□ Browser console shows zero errors
+□ Page text contains no "Error" messages
+□ All API calls return 200 status
+□ All JavaScript functions defined
+□ All external resources load successfully
+□ No 404s in network tab
+□ All buttons/forms actually functional when clicked
+□ Mention data appears correctly in tables/lists
+□ Search forms, keyword inputs, and filters work
+□ Trend charts and historical data display properly
+□ Export/download features actually function
+□ Screenshots show working interface WITH verified functionality
+
+**TESTING PROTOCOL:**
+- Use ONLY chromium-arm64 tools (NOT playwright/puppeteer)
+- Navigate to http://localhost:3000 and take screenshots
+- Click buttons and test the interface visually
+- NO CURL ALLOWED for UI testing - use browser automation only
+- Search ALL page content for error keywords
+- Verify functionality, not just appearance
+- Test with real searches and verify data appears
+
+Build, test, iterate until it works perfectly with ZERO tolerance for errors!
 ```
 
 ---

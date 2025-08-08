@@ -1,6 +1,6 @@
 {
   "name": "mcp-chromium-arm64",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "MCP server for Chrome automation on ARM64 using system Chromium",
   "main": "index.js",
   "type": "module",
@@ -10,9 +10,15 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.5",
-    "puppeteer-core": "^23.10.4"
+    "puppeteer-core": "^24.16.0"
   },
-  "keywords": ["mcp", "chrome", "automation", "arm64", "aarch64"],
+  "keywords": [
+    "mcp",
+    "chrome",
+    "automation",
+    "arm64",
+    "aarch64"
+  ],
   "author": "Claude Code",
   "license": "MIT"
 }
