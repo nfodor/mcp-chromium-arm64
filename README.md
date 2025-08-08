@@ -1,16 +1,58 @@
-# No-Code AI SaaS Builder for Everyone
+# MCP Chromium Server for ARM64
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-ARM64%20%7C%20Raspberry%20Pi-green?style=for-the-badge" alt="Platform Support">
   <img src="https://img.shields.io/badge/Claude%20Code-Compatible-blue?style=for-the-badge" alt="Claude Code">
-  <img src="https://img.shields.io/badge/Budget%20AI-Under%20$500-orange?style=for-the-badge" alt="Budget AI">
-  <img src="https://img.shields.io/badge/No%20Code-AI%20SaaS-purple?style=for-the-badge" alt="No Code">
+  <img src="https://img.shields.io/badge/Chrome%20DevTools%20Protocol-Native-red?style=for-the-badge" alt="CDP">
+  <img src="https://img.shields.io/badge/Version-1.3.0%20Direct%20CDP-purple?style=for-the-badge" alt="Version">
 </p>
 
 <p align="center">
-  <strong>Build and test complete SaaS applications with AI assistance on $80 hardware</strong><br>
-  <em>Democratizing AI-driven development for the global audience with limited budgets</em>
+  <strong>Native ARM64 browser automation using Chrome DevTools Protocol</strong><br>
+  <em>Direct system chromium control without Puppeteer dependencies</em>
 </p>
+
+## 🚀 Two Implementation Approaches Available
+
+### 📦 Version Comparison
+
+| Feature | **Direct CDP (v1.3.0)** ⭐ **RECOMMENDED** | **Puppeteer-based (v1.2.0)** |
+|---------|---------------------------------------------|------------------------------|
+| **Dependencies** | Only `ws` + MCP SDK (89 packages) | Puppeteer + MCP SDK (163 packages) |
+| **Memory Usage** | Lower (native chromium) | Higher (Node.js wrapper overhead) |
+| **Startup Time** | Faster (direct WebSocket) | Slower (puppeteer initialization) |
+| **Browser Control** | Native Chrome DevTools Protocol | Puppeteer abstraction layer |
+| **ARM64 Optimization** | Full native ARM64 | Depends on Puppeteer ARM64 support |
+| **Debugging** | Raw CDP messages visible | Abstracted by Puppeteer |
+| **Maintenance** | Chrome protocol changes only | Puppeteer + Chrome protocol changes |
+| **Performance** | Best (direct communication) | Good (wrapped communication) |
+
+### 🎯 When to Use Which Version
+
+**Use Direct CDP (v1.3.0) if:**
+- ✅ You want maximum performance and minimum dependencies
+- ✅ You need native ARM64 optimization
+- ✅ You want direct Chrome DevTools Protocol control
+- ✅ You're building production automation systems
+- ✅ You want the latest features and fastest updates
+
+**Use Puppeteer-based (v1.2.0) if:**
+- ✅ You're migrating from existing Puppeteer code
+- ✅ You prefer the Puppeteer API abstraction
+- ✅ You need specific Puppeteer features not yet implemented in direct CDP
+- ✅ You want to minimize changes to existing workflows
+
+### 🔄 Switching Between Versions
+
+```bash
+# Switch to Direct CDP (recommended)
+git checkout direct-chromium
+npm install  # Only 89 packages
+
+# Switch back to Puppeteer version
+git checkout main  
+npm install  # 163 packages
+```
 
 ---
 
@@ -149,6 +191,268 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node index.js
 # Test Python wrapper
 python3 simple_browser.py
 ```
+
+---
+
+## 🛠️ Developer Guide & Debugging
+
+### 🔧 Available MCP Tools (22 total)
+
+#### Core Browser Control
+- `navigate` - Navigate to URLs with full page loading
+- `screenshot` - Capture PNG screenshots (full page or viewport)
+- `click` - Click elements by CSS selector with precise positioning
+- `fill` - Fill input fields with text or values
+- `hover` - Hover over elements for dropdown/tooltip interactions
+- `select` - Select dropdown options by value
+- `evaluate` - Execute JavaScript and return results
+- `get_content` - Extract page HTML or plain text content
+
+#### Advanced Functionality  
+- `get_console_logs` - Retrieve browser console output
+- `get_console_errors` - Get console error messages only
+- `get_network_logs` - Monitor all network requests/responses
+- `get_network_errors` - Track failed network requests (4xx/5xx)
+- `wipe_logs` - Clear all stored logs from memory
+- `get_selected_element` - Get info about currently focused element
+
+#### Audit & Analysis Tools
+- `run_accessibility_audit` - Check alt text, labels, headings, contrast
+- `run_performance_audit` - Measure load times, memory usage, resources
+- `run_seo_audit` - Validate title, meta description, H1 tags, canonical
+- `run_best_practices_audit` - Check HTTPS, deprecated HTML, viewport
+- `run_nextjs_audit` - Next.js specific optimization checks
+- `run_debugger_mode` - Comprehensive debugging information
+- `run_audit_mode` - Run all audits together with summary
+- `close_browser` - Clean shutdown of chromium process
+
+### 🐛 Debugging & Development
+
+#### Direct MCP Testing
+```bash
+# Test individual tools directly
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"navigate","arguments":{"url":"https://example.com"}}}' | node index.js
+
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"document.title"}}}' | node index.js
+
+echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screenshot","arguments":{"name":"debug.png"}}}' | node index.js
+```
+
+#### Chrome DevTools Protocol Debugging
+```bash
+# Manual CDP connection test
+node -e "
+const { WebSocket } = require('ws');
+const { spawn } = require('child_process');
+
+const chrome = spawn('/usr/bin/chromium-browser', [
+  '--headless', '--remote-debugging-port=9227'
+]);
+
+setTimeout(() => {
+  fetch('http://localhost:9227/json')
+    .then(r => r.json())
+    .then(tabs => {
+      console.log('Available tabs:', tabs.length);
+      const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
+      ws.on('open', () => {
+        console.log('CDP WebSocket connected!');
+        ws.send(JSON.stringify({id: 1, method: 'Runtime.evaluate', params: {expression: '2+2'}}));
+      });
+      ws.on('message', (data) => {
+        console.log('CDP Response:', JSON.parse(data));
+        chrome.kill();
+        process.exit(0);
+      });
+    });
+}, 2000);
+"
+```
+
+#### Performance Monitoring
+```bash
+# Monitor system resources during operation
+htop &
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"navigate","arguments":{"url":"https://httpbin.org/delay/5"}}}' | time node index.js
+
+# Check memory usage
+ps aux | grep chromium
+free -h
+```
+
+#### Network Debugging
+```bash
+# Check if debugging port is accessible
+curl -s http://localhost:9222/json | jq '.[] | {id, title, type}'
+
+# Monitor WebSocket traffic (install websocat)
+websocat ws://localhost:9222/devtools/page/[TAB_ID] --text -v
+```
+
+### 🔍 Common Debugging Scenarios
+
+#### 1. WebSocket Connection Issues
+```bash
+# Symptoms: "CDP command timeout" errors
+# Check if chrome debugging port is running
+lsof -i :9222
+
+# Test manual connection
+node -e "
+const { WebSocket } = require('ws');
+const ws = new WebSocket('ws://localhost:9222/devtools/browser');
+ws.on('open', () => console.log('✓ WebSocket OK'));
+ws.on('error', (e) => console.log('✗ WebSocket Error:', e.message));
+setTimeout(() => process.exit(0), 2000);
+"
+```
+
+#### 2. Chrome Process Issues  
+```bash
+# Symptoms: Browser won't start or hangs
+# Kill any stuck processes
+pkill -f chromium-browser
+pkill -f remote-debugging-port
+
+# Test chrome startup manually
+timeout 10s /usr/bin/chromium-browser --headless --remote-debugging-port=9223 --no-sandbox
+
+# Check chrome logs
+journalctl --user -u chromium --since "1 hour ago"
+```
+
+#### 3. Element Selection Problems
+```bash
+# Debug CSS selectors interactively
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"document.querySelectorAll(\"button\").length"}}}' | node index.js
+
+# Get element information
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"document.querySelector(\"#mybutton\") ? \"found\" : \"not found\""}}}' | node index.js
+```
+
+#### 4. Memory and Performance Issues
+```bash
+# Monitor memory during operation
+watch -n 1 'ps aux | grep -E "(chromium|node)" | grep -v grep'
+
+# Chrome memory debugging
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"JSON.stringify(performance.memory)"}}}' | node index.js
+```
+
+### 🎯 Advanced Debugging Features
+
+#### Enable Verbose Logging
+```bash
+# Set environment variables for detailed output
+export DEBUG=puppeteer:*
+export NODE_ENV=development
+
+# Run with detailed Chrome logs
+/usr/bin/chromium-browser --headless --enable-logging --log-level=0 --remote-debugging-port=9222
+```
+
+#### CDP Message Tracing
+```bash
+# Create debug version with message logging
+cp index.js debug-index.js
+
+# Add to sendCDPCommand method:
+# console.log('→ CDP:', JSON.stringify(command));
+# console.log('← CDP:', JSON.stringify(response));
+
+node debug-index.js
+```
+
+#### Integration with Browser DevTools
+```bash
+# Connect regular Chrome DevTools to the headless instance
+# 1. Start the MCP server
+# 2. Open regular Chrome/Chromium
+# 3. Navigate to: chrome://inspect
+# 4. Click "Configure..." and add localhost:9222
+# 5. Click "inspect" on the page you want to debug
+```
+
+### 📊 Performance Benchmarks
+
+#### Startup Time Comparison
+```bash
+# Direct CDP (v1.3.0)
+time echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"Date.now()"}}}' | node index.js
+
+# Puppeteer version (v1.2.0)  
+git checkout main
+time echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"Date.now()"}}}' | node index.js
+```
+
+#### Memory Usage Monitoring
+```bash
+# Before operation
+free -h && ps aux | grep -E "(chromium|node)" | grep -v grep
+
+# During operation (run in another terminal)
+watch -n 1 'echo "=== $(date) ===" && free -h && echo && ps aux | grep -E "(chromium|node)" | grep -v grep'
+```
+
+### 🚨 Error Codes & Solutions
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `CDP command timeout` | WebSocket connection lost | Restart browser, check port availability |
+| `WebSocket not ready` | Chrome not fully started | Increase startup delay, check chrome process |
+| `Element not found` | CSS selector invalid | Verify selector with `evaluate` tool |
+| `ECONNREFUSED` | Debugging port blocked | Check firewall, kill existing chrome processes |
+| `Navigation timeout` | Page loading issues | Check network, increase timeout, try simpler page |
+
+### 🔧 Customization & Extension
+
+#### Adding New MCP Tools
+```javascript
+// In index.js, add to tools array:
+{
+  name: 'my_custom_tool',
+  description: 'My custom functionality',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      param: { type: 'string', description: 'Parameter description' }
+    },
+    required: ['param']
+  }
+}
+
+// Add to switch statement in CallToolRequestSchema handler:
+case 'my_custom_tool':
+  return await this.myCustomTool(args.param);
+
+// Implement the method:
+async myCustomTool(param) {
+  await this.ensureChromium();
+  const result = await this.sendCDPCommand('Page.navigate', { url: param });
+  return { content: [{ type: 'text', text: `Custom result: ${result}` }] };
+}
+```
+
+#### Chrome Launch Options
+```javascript
+// Modify in startChromium() method:
+const customArgs = [
+  '--headless',
+  '--no-sandbox',
+  '--disable-extensions',
+  '--disable-plugins',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
+  '--remote-debugging-port=9222',
+  '--window-size=1920,1080',        // Custom viewport
+  '--user-agent=CustomUA/1.0',      // Custom user agent
+  '--disable-web-security',         // For CORS testing
+  '--allow-running-insecure-content' // For mixed content
+];
+```
+
+---
 
 ##  Claude CLI Integration
 
