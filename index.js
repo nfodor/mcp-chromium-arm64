@@ -364,6 +364,11 @@ class DirectChromiumMCPServer {
         '--disable-gpu',
         '--disable-web-security',
         '--disable-features=VizDisplayCompositor',
+        '--disable-extensions',
+        '--disable-plugins',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
         `--remote-debugging-port=${debuggingPort}`,
         '--no-first-run',
         '--no-zygote',
@@ -379,106 +384,143 @@ class DirectChromiumMCPServer {
   }
 
   async connectToChromium() {
-    // Get available tabs
-    const response = await this.httpRequest(`http://localhost:${debuggingPort}/json`);
-    const tabs = JSON.parse(response);
+    // Wait a bit more for chromium to fully start
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (tabs.length === 0) {
-      // Create a new tab
-      const newTabResponse = await this.httpRequest(`http://localhost:${debuggingPort}/json/new`);
-      const newTab = JSON.parse(newTabResponse);
-      currentTabId = newTab.id;
-    } else {
-      currentTabId = tabs[0].id;
-    }
-
-    // Connect to WebSocket
-    const wsUrl = tabs.find(tab => tab.id === currentTabId)?.webSocketDebuggerUrl || 
-                  `ws://localhost:${debuggingPort}/devtools/page/${currentTabId}`;
-    
-    return new Promise((resolve, reject) => {
-      wsConnection = new WebSocket(wsUrl);
+    try {
+      // Get available tabs
+      const response = await this.httpRequest(`http://localhost:${debuggingPort}/json`);
+      const tabs = JSON.parse(response);
       
-      wsConnection.on('open', () => {
-        this.setupEventListeners();
-        resolve();
-      });
+      let wsUrl;
+      // Find a page tab (not extension)
+      const pageTab = tabs.find(tab => tab.type === 'page');
       
-      wsConnection.on('error', reject);
-    });
-  }
-
-  setupEventListeners() {
-    // Enable domains
-    this.sendCDPCommand('Runtime.enable');
-    this.sendCDPCommand('Network.enable');
-    this.sendCDPCommand('Page.enable');
-    this.sendCDPCommand('DOM.enable');
-
-    // Set up event listeners
-    wsConnection.on('message', (data) => {
-      const message = JSON.parse(data);
-      
-      if (message.method === 'Runtime.consoleAPICalled') {
-        const logEntry = {
-          type: message.params.type,
-          text: message.params.args.map(arg => arg.value || arg.description).join(' '),
-          timestamp: new Date().toISOString()
-        };
-        
-        consoleLogs.push(logEntry);
-        
-        if (['error', 'warning'].includes(message.params.type)) {
-          consoleErrors.push(logEntry);
-        }
-        
-        // Keep only last 100 entries
-        if (consoleLogs.length > 100) consoleLogs.shift();
-        if (consoleErrors.length > 100) consoleErrors.shift();
+      if (pageTab) {
+        currentTabId = pageTab.id;
+        wsUrl = pageTab.webSocketDebuggerUrl;
+      } else {
+        // Create a new tab
+        const newTabResponse = await this.httpRequest(`http://localhost:${debuggingPort}/json/new`);
+        const newTab = JSON.parse(newTabResponse);
+        currentTabId = newTab.id;
+        wsUrl = newTab.webSocketDebuggerUrl;
       }
 
-      if (message.method === 'Network.responseReceived') {
-        const logEntry = {
-          url: message.params.response.url,
-          status: message.params.response.status,
-          statusText: message.params.response.statusText,
-          method: message.params.response.requestMethod || 'GET',
-          timestamp: new Date().toISOString()
-        };
+      // Connect to WebSocket
+      return new Promise((resolve, reject) => {
+        wsConnection = new WebSocket(wsUrl);
         
-        networkLogs.push(logEntry);
+        wsConnection.on('open', async () => {
+          await this.setupEventListeners();
+          resolve();
+        });
         
-        if (message.params.response.status >= 400) {
-          networkErrors.push(logEntry);
+        wsConnection.on('error', reject);
+        
+        // Add timeout for connection
+        setTimeout(() => {
+          if (wsConnection.readyState !== WebSocket.OPEN) {
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, 5000);
+      });
+    } catch (error) {
+      throw new Error(`Failed to connect to chromium: ${error.message}`);
+    }
+  }
+
+  async setupEventListeners() {
+    // Enable domains in sequence
+    try {
+      await this.sendCDPCommand('Runtime.enable');
+      await this.sendCDPCommand('Page.enable');
+      await this.sendCDPCommand('Network.enable');
+      await this.sendCDPCommand('DOM.enable');
+    } catch (error) {
+      console.error('Failed to enable CDP domains:', error.message);
+    }
+
+    // Set up event listeners for logging (separate from command responses)
+    wsConnection.on('message', (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        // Only handle events (methods), not command responses (ids)
+        if (message.method && !message.id) {
+          if (message.method === 'Runtime.consoleAPICalled') {
+            const logEntry = {
+              type: message.params.type,
+              text: message.params.args.map(arg => arg.value || arg.description).join(' '),
+              timestamp: new Date().toISOString()
+            };
+            
+            consoleLogs.push(logEntry);
+            
+            if (['error', 'warning'].includes(message.params.type)) {
+              consoleErrors.push(logEntry);
+            }
+            
+            // Keep only last 100 entries
+            if (consoleLogs.length > 100) consoleLogs.shift();
+            if (consoleErrors.length > 100) consoleErrors.shift();
+          }
+
+          if (message.method === 'Network.responseReceived') {
+            const logEntry = {
+              url: message.params.response.url,
+              status: message.params.response.status,
+              statusText: message.params.response.statusText,
+              method: message.params.response.requestMethod || 'GET',
+              timestamp: new Date().toISOString()
+            };
+            
+            networkLogs.push(logEntry);
+            
+            if (message.params.response.status >= 400) {
+              networkErrors.push(logEntry);
+            }
+            
+            // Keep only last 100 entries
+            if (networkLogs.length > 100) networkLogs.shift();
+            if (networkErrors.length > 100) networkErrors.shift();
+          }
         }
-        
-        // Keep only last 100 entries
-        if (networkLogs.length > 100) networkLogs.shift();
-        if (networkErrors.length > 100) networkErrors.shift();
+      } catch (e) {
+        // Ignore parse errors
       }
     });
   }
 
   async sendCDPCommand(method, params = {}) {
+    if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+      throw new Error('WebSocket not ready for CDP command');
+    }
+
     return new Promise((resolve, reject) => {
-      const id = Date.now();
+      const id = Math.floor(Math.random() * 1000000);
       const command = { id, method, params };
       
       const timeout = setTimeout(() => {
+        wsConnection.removeListener('message', messageHandler);
         reject(new Error(`CDP command timeout: ${method}`));
       }, 10000);
 
       const messageHandler = (data) => {
-        const response = JSON.parse(data);
-        if (response.id === id) {
-          clearTimeout(timeout);
-          wsConnection.off('message', messageHandler);
-          
-          if (response.error) {
-            reject(new Error(response.error.message));
-          } else {
-            resolve(response.result);
+        try {
+          const response = JSON.parse(data.toString());
+          if (response.id === id) {
+            clearTimeout(timeout);
+            wsConnection.removeListener('message', messageHandler);
+            
+            if (response.error) {
+              reject(new Error(`CDP Error: ${response.error.message}`));
+            } else {
+              resolve(response.result || {});
+            }
           }
+        } catch (e) {
+          // Ignore parse errors for events
         }
       };
 
