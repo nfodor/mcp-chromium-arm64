@@ -1,0 +1,443 @@
+{
+  "mcp_tools_manifest": {
+    "server_info": {
+      "name": "chromium-arm64-server",
+      "version": "1.3.0",
+      "description": "ARM64-optimized browser automation with direct Chrome DevTools Protocol",
+      "protocol_version": "1.0.0"
+    },
+    "tools": [
+      {
+        "name": "navigate",
+        "description": "Navigate to a URL",
+        "category": "navigation",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "The URL to navigate to",
+              "format": "uri"
+            }
+          },
+          "required": ["url"]
+        },
+        "output_schema": {
+          "type": "object", 
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"},
+            "url": {"type": "string"},
+            "load_time": {"type": "number"}
+          }
+        },
+        "example_usage": "Navigate to https://example.com",
+        "capabilities": ["real_browser_simulation", "performance_metrics"]
+      },
+      {
+        "name": "screenshot",
+        "description": "Capture viewport or full page screenshot",
+        "category": "capture",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Filename for the screenshot"
+            },
+            "fullPage": {
+              "type": "boolean", 
+              "description": "Capture full page or just viewport",
+              "default": false
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "path": {"type": "string"},
+            "dimensions": {
+              "type": "object",
+              "properties": {
+                "width": {"type": "number"},
+                "height": {"type": "number"}
+              }
+            }
+          }
+        },
+        "example_usage": "Take a full page screenshot named 'homepage.png'",
+        "capabilities": ["visual_verification", "ui_testing"]
+      },
+      {
+        "name": "click",
+        "description": "Click on page elements using CSS selectors",
+        "category": "interaction", 
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "type": "string",
+              "description": "CSS selector for the element to click"
+            }
+          },
+          "required": ["selector"]
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"},
+            "selector": {"type": "string"}
+          }
+        },
+        "example_usage": "Click the login button: #login-btn",
+        "capabilities": ["user_interaction_simulation", "form_testing"]
+      },
+      {
+        "name": "fill", 
+        "description": "Fill form input fields",
+        "category": "interaction",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "type": "string",
+              "description": "CSS selector for the input field"
+            },
+            "value": {
+              "type": "string", 
+              "description": "Value to fill in the field"
+            }
+          },
+          "required": ["selector", "value"]
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"},
+            "selector": {"type": "string"},
+            "value": {"type": "string"}
+          }
+        },
+        "example_usage": "Fill email field: #email with test@example.com",
+        "capabilities": ["form_automation", "input_validation_testing"]
+      },
+      {
+        "name": "get_console_logs",
+        "description": "Retrieve browser console messages for debugging",
+        "category": "monitoring",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["all", "log", "warn", "error", "info"],
+              "default": "all"
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object", 
+          "properties": {
+            "success": {"type": "boolean"},
+            "logs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "level": {"type": "string"},
+                  "message": {"type": "string"}, 
+                  "timestamp": {"type": "string"}
+                }
+              }
+            },
+            "count": {"type": "number"}
+          }
+        },
+        "example_usage": "Get all console logs to check for JavaScript errors",
+        "capabilities": ["error_detection", "debugging_assistance", "quality_assurance"]
+      },
+      {
+        "name": "get_console_errors",
+        "description": "Get only console error messages",
+        "category": "monitoring",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "errors": {
+              "type": "array", 
+              "items": {
+                "type": "object",
+                "properties": {
+                  "message": {"type": "string"},
+                  "timestamp": {"type": "string"},
+                  "source": {"type": "string"}
+                }
+              }
+            },
+            "count": {"type": "number"}
+          }
+        },
+        "example_usage": "Check for JavaScript errors on the current page",
+        "capabilities": ["error_detection", "quality_assurance", "debugging"]
+      },
+      {
+        "name": "get_network_logs",
+        "description": "Monitor network requests and responses",
+        "category": "monitoring",
+        "input_schema": {
+          "type": "object", 
+          "properties": {
+            "filter": {
+              "type": "string",
+              "description": "Filter requests by URL pattern"
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "requests": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {"type": "string"},
+                  "method": {"type": "string"},
+                  "status": {"type": "number"},
+                  "response_time": {"type": "number"}
+                }
+              }
+            }
+          }
+        },
+        "example_usage": "Monitor API calls to check response times and failures",
+        "capabilities": ["api_testing", "performance_monitoring", "network_analysis"]
+      },
+      {
+        "name": "evaluate",
+        "description": "Execute JavaScript in the browser context", 
+        "category": "execution",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "script": {
+              "type": "string",
+              "description": "JavaScript code to execute"
+            }
+          },
+          "required": ["script"]
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "result": {"type": "any"},
+            "error": {"type": "string"}
+          }
+        },
+        "example_usage": "Execute JavaScript to check page state or manipulate DOM",
+        "capabilities": ["custom_testing", "dom_manipulation", "state_inspection"]
+      },
+      {
+        "name": "get_content",
+        "description": "Extract page content as HTML or plain text",
+        "category": "extraction",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string", 
+              "enum": ["html", "text"],
+              "default": "text"
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "content": {"type": "string"},
+            "type": {"type": "string"}
+          }
+        },
+        "example_usage": "Extract page content for analysis or verification",
+        "capabilities": ["content_analysis", "data_extraction", "seo_testing"]
+      },
+      {
+        "name": "run_accessibility_audit",
+        "description": "Run accessibility compliance check using browser tools",
+        "category": "auditing",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "audit_results": {
+              "type": "object",
+              "properties": {
+                "violations": {"type": "array"},
+                "passes": {"type": "array"},
+                "score": {"type": "number"}
+              }
+            }
+          }
+        },
+        "example_usage": "Check page for accessibility compliance issues",
+        "capabilities": ["accessibility_testing", "compliance_validation", "a11y_audit"]
+      },
+      {
+        "name": "run_performance_audit", 
+        "description": "Analyze page performance metrics and optimization opportunities",
+        "category": "auditing",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "load_time": {"type": "number"},
+                "first_contentful_paint": {"type": "number"},
+                "largest_contentful_paint": {"type": "number"},
+                "performance_score": {"type": "number"}
+              }
+            }
+          }
+        },
+        "example_usage": "Analyze page performance and get optimization recommendations",
+        "capabilities": ["performance_testing", "optimization_analysis", "speed_testing"]
+      },
+      {
+        "name": "hover",
+        "description": "Hover over page elements to trigger hover states",
+        "category": "interaction",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "type": "string",
+              "description": "CSS selector for element to hover over"
+            }
+          },
+          "required": ["selector"]
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Hover over navigation menu to test dropdown behavior",
+        "capabilities": ["ui_interaction_testing", "hover_state_validation"]
+      },
+      {
+        "name": "select",
+        "description": "Select options from dropdown menus",
+        "category": "interaction", 
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "type": "string",
+              "description": "CSS selector for the select element"
+            },
+            "value": {
+              "type": "string",
+              "description": "Value to select"
+            }
+          },
+          "required": ["selector", "value"]
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Select country from dropdown menu",
+        "capabilities": ["form_testing", "dropdown_interaction"]
+      },
+      {
+        "name": "close_browser", 
+        "description": "Close the browser instance and clean up resources",
+        "category": "lifecycle",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object", 
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Clean up browser instance after testing",
+        "capabilities": ["resource_management", "cleanup"]
+      }
+    ],
+    "tool_categories": {
+      "navigation": ["navigate"],
+      "interaction": ["click", "fill", "hover", "select"],
+      "capture": ["screenshot"],
+      "monitoring": ["get_console_logs", "get_console_errors", "get_network_logs"],
+      "extraction": ["get_content"],
+      "execution": ["evaluate"],
+      "auditing": ["run_accessibility_audit", "run_performance_audit"],
+      "lifecycle": ["close_browser"]
+    },
+    "use_case_workflows": {
+      "web_app_quality_check": [
+        "navigate",
+        "get_console_logs", 
+        "get_network_logs",
+        "run_performance_audit",
+        "screenshot",
+        "get_console_errors"
+      ],
+      "form_testing": [
+        "navigate",
+        "fill",
+        "click", 
+        "get_console_errors",
+        "screenshot"
+      ],
+      "accessibility_audit": [
+        "navigate",
+        "run_accessibility_audit",
+        "screenshot"
+      ],
+      "performance_analysis": [
+        "navigate", 
+        "run_performance_audit",
+        "get_network_logs"
+      ]
+    },
+    "integration_examples": {
+      "claude_code_natural_language": [
+        "Test my web app login flow and report any issues",
+        "Check my homepage for accessibility problems", 
+        "Monitor console errors while testing the checkout process",
+        "Take screenshots of all main pages and check performance"
+      ]
+    }
+  }
+}

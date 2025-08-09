@@ -1,0 +1,382 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MCP Chromium ARM64 Server API",
+    "description": "Production-ready browser automation server optimized for ARM64 architectures with direct Chrome DevTools Protocol communication. Enables Claude Code to achieve 90% confidence in web application quality through real browser simulation.",
+    "version": "1.3.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/nfodor/mcp-chromium-arm64/blob/main/LICENSE"
+    },
+    "contact": {
+      "name": "MCP Chromium ARM64 Server",
+      "url": "https://github.com/nfodor/mcp-chromium-arm64"
+    }
+  },
+  "servers": [
+    {
+      "url": "stdio://mcp-server",
+      "description": "MCP Server via STDIO transport"
+    }
+  ],
+  "paths": {
+    "/tools/list": {
+      "post": {
+        "summary": "List available browser automation tools",
+        "description": "Returns all 22 available browser automation tools with their schemas",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/MCPRequest"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ToolsListResponse"
+          }
+        }
+      }
+    },
+    "/tools/call": {
+      "post": {
+        "summary": "Execute browser automation tool",
+        "description": "Execute any of the 22 browser automation tools",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ToolCallRequest"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ToolCallResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "MCPRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "type": "string",
+                  "enum": ["2.0"]
+                },
+                "method": {
+                  "type": "string",
+                  "enum": ["tools/list", "tools/call"]
+                },
+                "id": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"}
+                  ]
+                }
+              },
+              "required": ["jsonrpc", "method", "id"]
+            }
+          }
+        }
+      },
+      "ToolCallRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {"$ref": "#/components/schemas/MCPBaseRequest"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "enum": [
+                            "navigate", "screenshot", "click", "fill", "get_content",
+                            "evaluate", "get_console_logs", "get_console_errors", 
+                            "get_network_logs", "get_network_errors", "hover", "select",
+                            "run_accessibility_audit", "run_performance_audit", 
+                            "run_seo_audit", "run_best_practices_audit", "run_nextjs_audit",
+                            "run_debugger_mode", "run_audit_mode", "get_selected_element",
+                            "wipe_logs", "close_browser"
+                          ]
+                        },
+                        "arguments": {
+                          "type": "object"
+                        }
+                      },
+                      "required": ["name", "arguments"]
+                    }
+                  },
+                  "required": ["params"]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "ToolsListResponse": {
+        "description": "List of available browser automation tools",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {"$ref": "#/components/schemas/MCPBaseResponse"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "tools": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/Tool"}
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ToolCallResponse": {
+        "description": "Result of browser automation tool execution",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {"$ref": "#/components/schemas/MCPBaseResponse"},
+                {
+                  "type": "object", 
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/ToolResult"}
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "MCPBaseRequest": {
+        "type": "object",
+        "properties": {
+          "jsonrpc": {"type": "string", "enum": ["2.0"]},
+          "method": {"type": "string"},
+          "id": {"oneOf": [{"type": "string"}, {"type": "number"}]}
+        },
+        "required": ["jsonrpc", "method", "id"]
+      },
+      "MCPBaseResponse": {
+        "type": "object",
+        "properties": {
+          "jsonrpc": {"type": "string", "enum": ["2.0"]},
+          "id": {"oneOf": [{"type": "string"}, {"type": "number"}]}
+        },
+        "required": ["jsonrpc", "id"]
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "inputSchema": {"$ref": "#/components/schemas/JSONSchema"}
+        },
+        "required": ["name", "description", "inputSchema"]
+      },
+      "ToolResult": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string", "enum": ["text"]},
+          "text": {"type": "string"}
+        },
+        "required": ["type", "text"]
+      },
+      "JSONSchema": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string"},
+          "properties": {"type": "object"},
+          "required": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "NavigateParams": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to navigate to"
+          }
+        },
+        "required": ["url"],
+        "example": {
+          "url": "https://example.com"
+        }
+      },
+      "ScreenshotParams": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filename for the screenshot"
+          },
+          "fullPage": {
+            "type": "boolean",
+            "description": "Capture full page or just viewport",
+            "default": false
+          }
+        },
+        "example": {
+          "name": "homepage.png",
+          "fullPage": true
+        }
+      },
+      "ClickParams": {
+        "type": "object", 
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS selector for the element to click"
+          }
+        },
+        "required": ["selector"],
+        "example": {
+          "selector": "#login-button"
+        }
+      },
+      "FillParams": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS selector for the input field"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to fill in the field"
+          }
+        },
+        "required": ["selector", "value"],
+        "example": {
+          "selector": "#email",
+          "value": "test@example.com"
+        }
+      },
+      "EvaluateParams": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "JavaScript code to execute"
+          }
+        },
+        "required": ["script"],
+        "example": {
+          "script": "document.title"
+        }
+      },
+      "ConsoleLogsParams": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["all", "log", "warn", "error", "info"],
+            "default": "all",
+            "description": "Filter logs by level"
+          }
+        }
+      },
+      "HoverParams": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS selector for element to hover over"
+          }
+        },
+        "required": ["selector"],
+        "example": {
+          "selector": ".dropdown-trigger"
+        }
+      },
+      "SelectParams": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string", 
+            "description": "CSS selector for the select element"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to select"
+          }
+        },
+        "required": ["selector", "value"],
+        "example": {
+          "selector": "#country",
+          "value": "US"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Browser Control",
+      "description": "Navigation, interaction, and lifecycle management"
+    },
+    {
+      "name": "Content Capture",
+      "description": "Screenshots and content extraction"
+    },
+    {
+      "name": "Monitoring",
+      "description": "Console logs, network requests, and error detection"  
+    },
+    {
+      "name": "Quality Assurance",
+      "description": "Performance, accessibility, and SEO auditing"
+    },
+    {
+      "name": "JavaScript Execution",
+      "description": "Custom script execution in browser context"
+    }
+  ],
+  "x-mcp-server": {
+    "name": "chromium-arm64-server",
+    "version": "1.3.0",
+    "transport": "stdio",
+    "capabilities": ["tools"],
+    "primary_use_case": "Claude Code Web App Quality Confidence",
+    "architecture": "Direct Chrome DevTools Protocol",
+    "platforms": ["linux-arm64", "darwin-arm64", "win32-arm64"],
+    "performance": {
+      "raspberry_pi_4": {
+        "navigation": "800ms average",
+        "screenshot": "1.2s full page", 
+        "memory": "80MB baseline"
+      }
+    },
+    "roi_metrics": {
+      "replacement_cost": "$80,000/year QA engineer",
+      "setup_cost": "$480 hardware",
+      "operating_cost": "$40/month",
+      "payback_period": "2 months"
+    }
+  }
+}
