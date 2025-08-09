@@ -595,8 +595,8 @@ case 'win32':
 
 ### Prerequisites
 ```bash
-# Install Claude CLI if you haven't already
-npm install -g @anthropic/claude-cli
+# Install Claude Code CLI if you haven't already
+npm install -g @anthropic-ai/claude-code
 ```
 
 ### Add to Claude CLI

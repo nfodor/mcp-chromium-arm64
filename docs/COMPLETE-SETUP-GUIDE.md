@@ -117,8 +117,8 @@ chromium-browser --version
 
 ### Install Claude CLI Globally
 ```bash
-# Install Claude CLI
-npm install -g @anthropic/claude-cli
+# Install Claude Code CLI
+npm install -g @anthropic-ai/claude-code
 
 # Verify installation
 claude --version
@@ -476,9 +476,9 @@ iotop          # Disk I/O monitoring
 
 **"Claude command not found"**
 ```bash
-# Reinstall Claude CLI
-npm uninstall -g @anthropic/claude-cli
-npm install -g @anthropic/claude-cli
+# Reinstall Claude Code CLI
+npm uninstall -g @anthropic-ai/claude-code
+npm install -g @anthropic-ai/claude-code
 ```
 
 **"chromium-arm64 failed to connect"**
