@@ -3,11 +3,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { WebSocket } from 'ws';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 // Global browser instance
 let chromiumProcess = null;
@@ -20,6 +21,65 @@ let consoleLogs = [];
 let consoleErrors = [];
 let networkLogs = [];
 let networkErrors = [];
+
+// Helper function to find Chromium executable
+function getChromiumPath() {
+  const platform = os.platform();
+  
+  if (platform === 'linux') {
+    // Try common Linux paths
+    const linuxPaths = [
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable'
+    ];
+    
+    for (const chromePath of linuxPaths) {
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  } else if (platform === 'darwin') {
+    // macOS paths
+    const macPaths = [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      '/opt/homebrew/bin/chromium'
+    ];
+    
+    for (const chromePath of macPaths) {
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  } else if (platform === 'win32') {
+    // Windows paths
+    const winPaths = [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Chromium\\Application\\chrome.exe'
+    ];
+    
+    for (const chromePath of winPaths) {
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  }
+  
+  // Try to find via which command
+  try {
+    const result = execSync('which chromium-browser || which chromium || which google-chrome', { encoding: 'utf8' }).trim();
+    if (result) {
+      return result.split('\n')[0];
+    }
+  } catch (error) {
+    // Ignore error, will throw below
+  }
+  
+  throw new Error(`Could not find Chromium browser. Please install it for your platform.`);
+}
 
 class DirectChromiumMCPServer {
   constructor() {
@@ -356,7 +416,8 @@ class DirectChromiumMCPServer {
 
   async startChromium() {
     return new Promise((resolve, reject) => {
-      chromiumProcess = spawn('/usr/bin/chromium-browser', [
+      const chromiumPath = getChromiumPath();
+      chromiumProcess = spawn(chromiumPath, [
         '--headless',
         '--no-sandbox',
         '--disable-setuid-sandbox',

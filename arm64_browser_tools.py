@@ -10,6 +10,10 @@ import tempfile
 import os
 from typing import Dict, Any
 
+# Dynamically determine the server directory
+SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+INDEX_PATH = os.path.join(SERVER_DIR, "index.js")
+
 def arm64_browser_navigate(url: str) -> str:
     """Navigate to a URL using ARM64 Chromium browser.
     
@@ -28,12 +32,12 @@ def arm64_browser_navigate(url: str) -> str:
     
     try:
         result = subprocess.run(
-            ["node", "/home/pi/dev/vitrain/mcp-chromium-server/index.js"],
+            ["node", INDEX_PATH],
             input=json.dumps(request),
             text=True,
             capture_output=True,
             timeout=30,
-            cwd="/home/pi/dev/vitrain/mcp-chromium-server"
+            cwd=SERVER_DIR
         )
         
         # Parse both stdout and stderr for JSON responses
@@ -73,12 +77,12 @@ def arm64_browser_screenshot(name: str = "screenshot.png", full_page: bool = Fal
     
     try:
         result = subprocess.run(
-            ["node", "/home/pi/dev/vitrain/mcp-chromium-server/index.js"],
+            ["node", INDEX_PATH],
             input=json.dumps(request),
             text=True,
             capture_output=True,
             timeout=30,
-            cwd="/home/pi/dev/vitrain/mcp-chromium-server"
+            cwd=SERVER_DIR
         )
         
         # Parse both stdout and stderr for JSON responses
@@ -117,12 +121,12 @@ def arm64_browser_get_content(content_type: str = "text") -> str:
     
     try:
         result = subprocess.run(
-            ["node", "/home/pi/dev/vitrain/mcp-chromium-server/index.js"],
+            ["node", INDEX_PATH],
             input=json.dumps(request),
             text=True,
             capture_output=True,
             timeout=30,
-            cwd="/home/pi/dev/vitrain/mcp-chromium-server"
+            cwd=SERVER_DIR
         )
         
         # Parse both stdout and stderr for JSON responses
@@ -161,12 +165,12 @@ def arm64_browser_evaluate(script: str) -> str:
     
     try:
         result = subprocess.run(
-            ["node", "/home/pi/dev/vitrain/mcp-chromium-server/index.js"],
+            ["node", INDEX_PATH],
             input=json.dumps(request),
             text=True,
             capture_output=True,
             timeout=30,
-            cwd="/home/pi/dev/vitrain/mcp-chromium-server"
+            cwd=SERVER_DIR
         )
         
         # Parse both stdout and stderr for JSON responses

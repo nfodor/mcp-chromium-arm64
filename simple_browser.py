@@ -5,13 +5,18 @@ Simple ARM64 Browser Tool - Direct approach
 
 import subprocess
 import json
+import os
+import sys
+
+# Dynamically determine the server directory
+SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def browser_navigate(url):
     """Navigate to URL using ARM64 Chromium."""
     cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"navigate\\",\\"arguments\\":{{\\"url\\":\\"{url}\\"}}}},\\"id\\":1}}" | node index.js\''
     
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd="/home/pi/dev/vitrain/mcp-chromium-server")
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
         
         # Look for JSON in both stdout and stderr
         all_output = result.stdout + result.stderr
@@ -36,7 +41,7 @@ def browser_screenshot(name="test.png"):
     cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"screenshot\\",\\"arguments\\":{{\\"name\\":\\"{name}\\"}}}},\\"id\\":1}}" | node index.js\''
     
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd="/home/pi/dev/vitrain/mcp-chromium-server")
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
         
         all_output = result.stdout + result.stderr
         
@@ -59,7 +64,7 @@ def browser_evaluate(script):
     cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"evaluate\\",\\"arguments\\":{{\\"script\\":\\"{script}\\"}}}},\\"id\\":1}}" | node index.js\''
     
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd="/home/pi/dev/vitrain/mcp-chromium-server")
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
         
         all_output = result.stdout + result.stderr
         

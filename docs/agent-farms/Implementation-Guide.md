@@ -74,8 +74,8 @@ After=network.target
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/claude-arm64-browser
-ExecStart=/usr/bin/node /home/pi/claude-arm64-browser/agent-server.js
+WorkingDirectory=/opt/claude-browser
+ExecStart=/usr/bin/node /opt/claude-browser/agent-server.js
 Restart=always
 RestartSec=10
 

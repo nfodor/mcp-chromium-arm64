@@ -183,7 +183,7 @@ claude mcp list
 
 **Expected output**:
 ```
-chromium-arm64: /home/pi/claude-arm64-browser/mcp-wrapper.sh - ✓ Connected
+chromium-arm64: /path/to/mcp-chromium-arm64/mcp-wrapper.sh - ✓ Connected
 ```
 
 ### Test Claude Integration

@@ -13,8 +13,10 @@ from typing import Dict, Any, Optional
 
 class ChromiumARM64Tool:
     def __init__(self):
-        self.server_path = "/home/pi/dev/vitrain/mcp-chromium-server/index.js"
-        self.working_dir = "/home/pi/dev/vitrain/mcp-chromium-server"
+        # Dynamically determine paths based on script location
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.server_path = os.path.join(script_dir, "index.js")
+        self.working_dir = script_dir
         
     def _call_mcp_server(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Call our MCP server directly and return the result."""

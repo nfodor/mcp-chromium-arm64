@@ -35,8 +35,8 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-if ! command -v chromium-browser &> /dev/null; then
-    echo "❌ Chromium not found. Please install: sudo apt install chromium-browser"
+if ! command -v chromium-browser &> /dev/null && ! command -v chromium &> /dev/null && ! command -v google-chrome &> /dev/null; then
+    echo "❌ Chromium/Chrome not found. Please install Chromium or Chrome for your platform."
     exit 1
 fi
 
