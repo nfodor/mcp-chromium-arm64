@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "chromium-arm64": {
+      "command": "node",
+      "args": ["index.js"],
+      "cwd": "/home/pi/dev/mcp-chromium-arm64/mcp-chromium-arm64-fresh"
+    }
+  }
+}
