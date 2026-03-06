@@ -462,7 +462,7 @@ class DirectChromiumMCPServer {
         wsUrl = pageTab.webSocketDebuggerUrl;
       } else {
         // Create a new tab
-        const newTabResponse = await this.httpRequest(`http://localhost:${debuggingPort}/json/new`);
+        const newTabResponse = await this.httpRequest(`http://localhost:${debuggingPort}/json/new`, 'PUT');
         const newTab = JSON.parse(newTabResponse);
         currentTabId = newTab.id;
         wsUrl = newTab.webSocketDebuggerUrl;
@@ -589,17 +589,24 @@ class DirectChromiumMCPServer {
       wsConnection.send(JSON.stringify(command));
     });
   }
-
-  async httpRequest(url) {
+  async httpRequest(url, method = 'GET') {
     return new Promise((resolve, reject) => {
-      http.get(url, (res) => {
+      const urlObj = new URL(url);
+      const options = {
+        method: method,
+        hostname: urlObj.hostname,
+        port: urlObj.port,
+        path: urlObj.pathname,
+      };
+      const req = http.request(options, (res) => {
         let data = '';
         res.on('data', chunk => data += chunk);
         res.on('end', () => resolve(data));
-      }).on('error', reject);
+      });
+      req.on('error', reject);
+      req.end();
     });
   }
-
   async navigate(url) {
     await this.ensureChromium();
     await this.sendCDPCommand('Page.navigate', { url });
