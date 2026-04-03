@@ -2,7 +2,7 @@
   "mcp_tools_manifest": {
     "server_info": {
       "name": "chromium-arm64-server",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "description": "ARM64-optimized browser automation with direct Chrome DevTools Protocol",
       "protocol_version": "1.0.0"
     },
@@ -376,7 +376,72 @@
         "capabilities": ["form_testing", "dropdown_interaction"]
       },
       {
-        "name": "close_browser", 
+        "name": "emulate_device",
+        "description": "Emulate a mobile device with presets (iPhone 16, Pixel 9, Galaxy S24, tablets) or custom viewport/UA/DPR/touch",
+        "category": "emulation",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "device": {
+              "type": "string",
+              "description": "Device preset name (e.g. iphone-16, pixel-9, galaxy-s24-ultra, ipad-pro-13)"
+            },
+            "width": {
+              "type": "number",
+              "description": "Custom viewport width"
+            },
+            "height": {
+              "type": "number",
+              "description": "Custom viewport height"
+            },
+            "deviceScaleFactor": {
+              "type": "number",
+              "description": "Device pixel ratio (default: 2)"
+            },
+            "mobile": {
+              "type": "boolean",
+              "description": "Emulate mobile device (default: true)"
+            },
+            "userAgent": {
+              "type": "string",
+              "description": "Custom user agent string"
+            },
+            "landscape": {
+              "type": "boolean",
+              "description": "Landscape orientation (default: false)"
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Emulate iPhone 16 Pro Max to test responsive design",
+        "capabilities": ["mobile_testing", "responsive_design", "device_emulation"]
+      },
+      {
+        "name": "reset_emulation",
+        "description": "Reset device emulation back to desktop mode",
+        "category": "emulation",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Reset back to desktop viewport after mobile testing",
+        "capabilities": ["device_emulation", "viewport_reset"]
+      },
+      {
+        "name": "close_browser",
         "description": "Close the browser instance and clean up resources",
         "category": "lifecycle",
         "input_schema": {
@@ -402,6 +467,7 @@
       "extraction": ["get_content"],
       "execution": ["evaluate"],
       "auditing": ["run_accessibility_audit", "run_performance_audit"],
+      "emulation": ["emulate_device", "reset_emulation"],
       "lifecycle": ["close_browser"]
     },
     "use_case_workflows": {
@@ -426,9 +492,16 @@
         "screenshot"
       ],
       "performance_analysis": [
-        "navigate", 
+        "navigate",
         "run_performance_audit",
         "get_network_logs"
+      ],
+      "mobile_responsive_testing": [
+        "navigate",
+        "emulate_device",
+        "screenshot",
+        "get_console_errors",
+        "reset_emulation"
       ]
     },
     "integration_examples": {

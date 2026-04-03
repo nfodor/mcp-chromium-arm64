@@ -5,7 +5,7 @@
       "slug": "chromium-arm64",
       "tagline": "Give Claude Code 90% confidence in web app quality",
       "description": "Transform Claude Code from code reviewer to comprehensive web application tester. Real browser simulation provides console logs, network monitoring, and UI interaction capabilities for confident web app quality assessment.",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "author": {
         "name": "Nicolas Fodor",
         "profile": "https://github.com/nfodor",
@@ -69,6 +69,11 @@
         "name": "Visual Verification",
         "description": "Screenshot capture for visual proof and regression testing",
         "icon": "screenshot"
+      },
+      {
+        "name": "Mobile Device Emulation",
+        "description": "Test responsive designs on 20 device presets (iPhone 16, Pixel 9, Galaxy S24, tablets) with touch, UA, and DPR simulation",
+        "icon": "mobile"
       }
     ],
     "use_cases": [
@@ -92,6 +97,13 @@
         "persona": "E-commerce Developer",
         "pain_point": "Manual testing of complex purchase flows is time-consuming and error-prone",
         "solution": "Claude automatically tests entire purchase workflows with performance monitoring"
+      },
+      {
+        "title": "Mobile Responsive Testing",
+        "description": "Validate responsive layouts across iPhone, Pixel, Galaxy, and tablet viewports",
+        "persona": "Frontend Developer",
+        "pain_point": "No easy way to test mobile layouts without physical devices or paid emulation services",
+        "solution": "Claude emulates 20 real device profiles with touch, user agent, and viewport simulation"
       },
       {
         "title": "Continuous Integration",

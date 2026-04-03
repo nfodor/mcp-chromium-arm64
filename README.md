@@ -4,19 +4,19 @@
   <img src="https://img.shields.io/badge/MCP%20Protocol-1.0%20Compatible-blue?style=for-the-badge" alt="MCP Compatible">
   <img src="https://img.shields.io/badge/Platform-ARM64%20Cross--Platform-green?style=for-the-badge" alt="Platform Support">
   <img src="https://img.shields.io/badge/Chrome%20DevTools%20Protocol-Native-red?style=for-the-badge" alt="CDP">
-  <img src="https://img.shields.io/badge/Version-1.3.0%20Direct%20CDP-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.4.0%20Direct%20CDP-purple?style=for-the-badge" alt="Version">
 </p>
 
 <p align="center">
   <strong>Cross-platform ARM64 browser automation via Chrome DevTools Protocol</strong><br>
-  <em>Native Chromium control with 22 MCP tools for Linux, macOS, and Windows ARM64</em>
+  <em>Native Chromium control with 24 MCP tools for Linux, macOS, and Windows ARM64</em>
 </p>
 
 ## 🚀 Two Implementation Approaches Available
 
 ### 📦 Version Comparison
 
-| Feature | **Direct CDP (v1.3.0)** ⭐ **RECOMMENDED** | **Puppeteer-based (v1.2.0)** |
+| Feature | **Direct CDP (v1.4.0)** ⭐ **RECOMMENDED** | **Puppeteer-based (v1.2.0)** |
 |---------|---------------------------------------------|------------------------------|
 | **Dependencies** | Only `ws` + MCP SDK (89 packages) | Puppeteer + MCP SDK (163 packages) |
 | **Memory Usage** | Lower (native chromium) | Higher (Node.js wrapper overhead) |
@@ -29,7 +29,7 @@
 
 ### 🎯 When to Use Which Version
 
-**Use Direct CDP (v1.3.0) if:**
+**Use Direct CDP (v1.4.0) if:**
 - ✅ You want maximum performance and minimum dependencies
 - ✅ You need native ARM64 optimization
 - ✅ You want direct Chrome DevTools Protocol control
@@ -85,7 +85,7 @@ This repository includes multiple documentation approaches for different audienc
 
 **🤖 Native ARM64 Browser Automation** 
 - Direct Chrome DevTools Protocol implementation
-- 22 comprehensive MCP tools for complete browser control
+- 24 comprehensive MCP tools for complete browser control
 - Optimized for Raspberry Pi and Apple Silicon architectures
 - No dependency on broken x86_64 Puppeteer binaries
 
@@ -158,7 +158,7 @@ python3 simple_browser.py
 
 ## 🛠️ Developer Guide & Debugging
 
-### 🔧 Available MCP Tools (22 total)
+### 🔧 Available MCP Tools (24 total)
 
 #### Core Browser Control
 - `navigate` - Navigate to URLs with full page loading
@@ -177,6 +177,10 @@ python3 simple_browser.py
 - `get_network_errors` - Track failed network requests (4xx/5xx)
 - `wipe_logs` - Clear all stored logs from memory
 - `get_selected_element` - Get info about currently focused element
+
+#### Mobile Device Emulation
+- `emulate_device` - Emulate mobile devices with 20 presets (iPhone 16, Pixel 9, Galaxy S24, tablets) or custom viewport/UA/DPR/touch, with landscape support
+- `reset_emulation` - Reset device emulation back to desktop mode
 
 #### Audit & Analysis Tools
 - `run_accessibility_audit` - Check alt text, labels, headings, contrast
