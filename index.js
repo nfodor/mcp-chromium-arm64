@@ -15,12 +15,38 @@ let chromiumProcess = null;
 let wsConnection = null;
 let currentTabId = null;
 let debuggingPort = 9222;
+const chromiumWindowSize = process.env.CHROMIUM_WINDOW_SIZE || '1280,720';
 
 // Log storage
 let consoleLogs = [];
 let consoleErrors = [];
 let networkLogs = [];
 let networkErrors = [];
+
+// Mobile device presets
+const DEVICE_PRESETS = {
+  // iPhones
+  'iphone-16': { width: 393, height: 852, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'iphone-16-pro': { width: 402, height: 874, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'iphone-16-pro-max': { width: 440, height: 956, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'iphone-16e': { width: 393, height: 852, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'iphone-15': { width: 393, height: 852, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' },
+  'iphone-15-pro-max': { width: 430, height: 932, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' },
+  'iphone-se': { width: 375, height: 667, deviceScaleFactor: 2, mobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' },
+  // Pixels
+  'pixel-9': { width: 412, height: 923, deviceScaleFactor: 2.75, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  'pixel-9-pro': { width: 412, height: 923, deviceScaleFactor: 2.75, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  'pixel-9-pro-xl': { width: 448, height: 998, deviceScaleFactor: 2.6, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  'pixel-9-pro-fold': { width: 373, height: 841, deviceScaleFactor: 2.625, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro Fold) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  // Samsung
+  'galaxy-s24': { width: 360, height: 780, deviceScaleFactor: 3, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S921B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  'galaxy-s24-ultra': { width: 412, height: 915, deviceScaleFactor: 3.125, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  'galaxy-z-fold-5': { width: 373, height: 841, deviceScaleFactor: 2.625, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-F946B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36' },
+  // Tablets
+  'ipad-air-m2': { width: 820, height: 1180, deviceScaleFactor: 2, mobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'ipad-pro-13': { width: 1032, height: 1376, deviceScaleFactor: 2, mobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
+  'galaxy-tab-s9': { width: 800, height: 1280, deviceScaleFactor: 2, mobile: true, userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36' },
+};
 
 // Helper function to find Chromium executable
 function getChromiumPath() {
@@ -86,7 +112,7 @@ class DirectChromiumMCPServer {
     this.server = new Server(
       {
         name: 'chromium-arm64-server',
-        version: '1.3.0',
+        version: '1.4.0',
       },
       {
         capabilities: {
@@ -333,6 +359,51 @@ class DirectChromiumMCPServer {
           },
         },
         {
+          name: 'emulate_device',
+          description: `Emulate a mobile device (viewport, user agent, touch, device pixel ratio). Available presets: ${Object.keys(DEVICE_PRESETS).join(', ')}. Or pass custom width/height/userAgent.`,
+          inputSchema: {
+            type: 'object',
+            properties: {
+              device: {
+                type: 'string',
+                description: `Device preset name: ${Object.keys(DEVICE_PRESETS).join(', ')}`,
+              },
+              width: {
+                type: 'number',
+                description: 'Custom viewport width (ignored if device preset is set)',
+              },
+              height: {
+                type: 'number',
+                description: 'Custom viewport height (ignored if device preset is set)',
+              },
+              deviceScaleFactor: {
+                type: 'number',
+                description: 'Device scale factor / DPR (default: 2)',
+              },
+              mobile: {
+                type: 'boolean',
+                description: 'Whether to emulate a mobile device (default: true)',
+              },
+              userAgent: {
+                type: 'string',
+                description: 'Custom user agent string',
+              },
+              landscape: {
+                type: 'boolean',
+                description: 'Use landscape orientation (swaps width/height, default: false)',
+              },
+            },
+          },
+        },
+        {
+          name: 'reset_emulation',
+          description: 'Reset device emulation back to desktop mode',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
           name: 'close_browser',
           description: 'Close the browser instance',
           inputSchema: {
@@ -390,6 +461,10 @@ class DirectChromiumMCPServer {
             return await this.runDebuggerMode();
           case 'run_audit_mode':
             return await this.runAuditMode();
+          case 'emulate_device':
+            return await this.emulateDevice(args);
+          case 'reset_emulation':
+            return await this.resetEmulation();
           case 'close_browser':
             return await this.closeBrowser();
           default:
@@ -434,7 +509,7 @@ class DirectChromiumMCPServer {
         '--no-first-run',
         '--no-zygote',
         '--disable-accelerated-2d-canvas',
-        '--window-size=1280,720'
+        `--window-size=${chromiumWindowSize}`
       ]);
 
       chromiumProcess.on('error', reject);
@@ -1077,6 +1152,69 @@ class DirectChromiumMCPServer {
     
     return {
       content: [{ type: 'text', text: `Comprehensive Audit Mode Results:\\n\\nSUMMARY:\\n${summary}\\n\\nFULL REPORT:${fullReport}` }],
+    };
+  }
+
+  async emulateDevice(args) {
+    await this.ensureChromium();
+
+    let width, height, deviceScaleFactor, mobile, userAgent;
+
+    if (args.device) {
+      const preset = DEVICE_PRESETS[args.device];
+      if (!preset) {
+        throw new Error(`Unknown device preset: "${args.device}". Available: ${Object.keys(DEVICE_PRESETS).join(', ')}`);
+      }
+      ({ width, height, deviceScaleFactor, mobile, userAgent } = preset);
+    } else {
+      width = args.width || 375;
+      height = args.height || 812;
+      deviceScaleFactor = args.deviceScaleFactor || 2;
+      mobile = args.mobile !== undefined ? args.mobile : true;
+      userAgent = args.userAgent || '';
+    }
+
+    if (args.landscape) {
+      [width, height] = [height, width];
+    }
+
+    await this.sendCDPCommand('Emulation.setDeviceMetricsOverride', {
+      width,
+      height,
+      deviceScaleFactor,
+      mobile,
+      screenOrientation: {
+        angle: args.landscape ? 90 : 0,
+        type: args.landscape ? 'landscapePrimary' : 'portraitPrimary',
+      },
+    });
+
+    await this.sendCDPCommand('Emulation.setTouchEmulationEnabled', {
+      enabled: mobile,
+      maxTouchPoints: mobile ? 5 : 0,
+    });
+
+    if (userAgent) {
+      await this.sendCDPCommand('Emulation.setUserAgentOverride', {
+        userAgent,
+      });
+    }
+
+    const deviceName = args.device || 'custom';
+    return {
+      content: [{ type: 'text', text: `Emulating ${deviceName}: ${width}x${height} @${deviceScaleFactor}x, mobile=${mobile}${args.landscape ? ', landscape' : ''}${userAgent ? ', UA overridden' : ''}` }],
+    };
+  }
+
+  async resetEmulation() {
+    await this.ensureChromium();
+
+    await this.sendCDPCommand('Emulation.clearDeviceMetricsOverride');
+    await this.sendCDPCommand('Emulation.setTouchEmulationEnabled', { enabled: false });
+    await this.sendCDPCommand('Emulation.setUserAgentOverride', { userAgent: '' });
+
+    return {
+      content: [{ type: 'text', text: 'Device emulation reset to desktop mode' }],
     };
   }
 
