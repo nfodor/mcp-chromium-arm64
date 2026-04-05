@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>Cross-platform ARM64 browser automation via Chrome DevTools Protocol</strong><br>
-  <em>Native Chromium control with 24 MCP tools for Linux, macOS, and Windows ARM64</em>
+  <em>Native Chromium control with 27 MCP tools for Linux, macOS, and Windows ARM64</em>
 </p>
 
 ## 🚀 Two Implementation Approaches Available
@@ -85,7 +85,7 @@ This repository includes multiple documentation approaches for different audienc
 
 **🤖 Native ARM64 Browser Automation** 
 - Direct Chrome DevTools Protocol implementation
-- 24 comprehensive MCP tools for complete browser control
+- 27 comprehensive MCP tools for complete browser control
 - Optimized for Raspberry Pi and Apple Silicon architectures
 - No dependency on broken x86_64 Puppeteer binaries
 
@@ -158,7 +158,7 @@ python3 simple_browser.py
 
 ## 🛠️ Developer Guide & Debugging
 
-### 🔧 Available MCP Tools (24 total)
+### 🔧 Available MCP Tools (27 total)
 
 #### Core Browser Control
 - `navigate` - Navigate to URLs with full page loading
@@ -179,8 +179,17 @@ python3 simple_browser.py
 - `get_selected_element` - Get info about currently focused element
 
 #### Mobile Device Emulation
-- `emulate_device` - Emulate mobile devices with 20 presets (iPhone 16, Pixel 9, Galaxy S24, tablets) or custom viewport/UA/DPR/touch, with landscape support
+- `emulate_device` - Emulate mobile devices with 17 presets or custom viewport/UA/DPR/touch, with landscape support
+  - **iPhones**: `iphone-16`, `iphone-16-pro`, `iphone-16-pro-max`, `iphone-16e`, `iphone-15`, `iphone-15-pro-max`, `iphone-se`
+  - **Pixels**: `pixel-9`, `pixel-9-pro`, `pixel-9-pro-xl`, `pixel-9-pro-fold`
+  - **Samsung**: `galaxy-s24`, `galaxy-s24-ultra`, `galaxy-z-fold-5`
+  - **Tablets**: `ipad-air-m2`, `ipad-pro-13`, `galaxy-tab-s9`
 - `reset_emulation` - Reset device emulation back to desktop mode
+
+#### Screencast Recording
+- `start_screencast` - Start recording browser activity via CDP screencast (configurable format, quality, resolution, frame skip)
+- `stop_screencast` - Stop recording and encode to **MP4**, **GIF**, or **WebM** via ffmpeg (auto-detects FPS from frame timestamps)
+- `screencast_status` - Check recording status, frame count, and elapsed duration
 
 #### Audit & Analysis Tools
 - `run_accessibility_audit` - Check alt text, labels, headings, contrast
@@ -202,6 +211,86 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"navigate",
 echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"evaluate","arguments":{"script":"document.title"}}}' | node index.js
 
 echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screenshot","arguments":{"name":"debug.png"}}}' | node index.js
+```
+
+#### Screencast Recording
+```bash
+# Start recording, interact with the page, then stop and encode
+# 1. Start screencast
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"start_screencast","arguments":{"format":"jpeg","quality":80,"maxWidth":1280,"maxHeight":720}}}' | node index.js
+
+# 2. Perform actions (navigate, click, fill, etc.)
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"navigate","arguments":{"url":"https://example.com"}}}' | node index.js
+
+# 3. Check recording progress
+echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screencast_status","arguments":{}}}' | node index.js
+
+# 4. Stop and encode to MP4
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"stop_screencast","arguments":{"output":"mp4","name":"my-demo"}}}' | node index.js
+# Output: /tmp/my-demo.mp4
+
+# Encode as GIF instead (2-pass palette for quality)
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"stop_screencast","arguments":{"output":"gif","name":"bug-repro"}}}' | node index.js
+# Output: /tmp/bug-repro.gif
+
+# Or WebM (VP9)
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"stop_screencast","arguments":{"output":"webm"}}}' | node index.js
+```
+
+> **Requires**: `ffmpeg` installed on the system. FPS is auto-detected from CDP frame timestamps. GIF output is capped at 15fps for reasonable file sizes.
+
+#### Mobile Device Emulation
+```bash
+# Emulate iPhone 16 Pro
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"emulate_device","arguments":{"device":"iphone-16-pro"}}}' | node index.js
+
+# Emulate in landscape mode
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"emulate_device","arguments":{"device":"ipad-pro-13","landscape":true}}}' | node index.js
+
+# Custom viewport with DPR
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"emulate_device","arguments":{"width":390,"height":844,"deviceScaleFactor":3,"mobile":true}}}' | node index.js
+
+# Reset back to desktop
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"reset_emulation","arguments":{}}}' | node index.js
+```
+
+#### Network & Console Monitoring
+```bash
+# Navigate to a page, then check console logs
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_console_logs","arguments":{}}}' | node index.js
+
+# Get only errors
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_console_errors","arguments":{}}}' | node index.js
+
+# Check network activity (all requests with status codes)
+echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_network_logs","arguments":{}}}' | node index.js
+
+# Check for failed requests (4xx/5xx)
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"get_network_errors","arguments":{}}}' | node index.js
+
+# Clear all logs when done
+echo '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"wipe_logs","arguments":{}}}' | node index.js
+```
+
+#### Audits
+```bash
+# Run all audits at once (accessibility + performance + SEO + best practices + Next.js)
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"run_audit_mode","arguments":{}}}' | node index.js
+
+# Or run individual audits
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"run_accessibility_audit","arguments":{}}}' | node index.js
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"run_performance_audit","arguments":{}}}' | node index.js
+echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"run_seo_audit","arguments":{}}}' | node index.js
+
+# Get full debug info (URL, viewport, memory, timing)
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"run_debugger_mode","arguments":{}}}' | node index.js
+```
+
+#### Element Inspection
+```bash
+# Get info about the currently focused element
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_selected_element","arguments":{}}}' | node index.js
+# Returns: tagName, id, className, textContent, value, and a CSS selector
 ```
 
 #### Chrome DevTools Protocol Debugging
@@ -397,6 +486,12 @@ async myCustomTool(param) {
   const result = await this.sendCDPCommand('Page.navigate', { url: param });
   return { content: [{ type: 'text', text: `Custom result: ${result}` }] };
 }
+```
+
+#### Environment Variables
+```bash
+# Set browser window size (default: 1280,720)
+export CHROMIUM_WINDOW_SIZE=1920,1080
 ```
 
 #### Chrome Launch Options
@@ -635,6 +730,12 @@ Take a screenshot using the chromium-arm64 tool
 Use chromium-arm64 to click the button with selector #submit
 
 Fill the email field using chromium-arm64 with test@example.com
+
+Record a screencast of the login flow and save it as a GIF
+
+Emulate an iPhone 16 Pro and take a screenshot of the homepage
+
+Run a full audit on https://example.com using chromium-arm64
 ```
 
 **Be explicit to avoid Playwright/Puppeteer:**
@@ -687,10 +788,13 @@ print(content[:100])  # First 100 chars of page text
 Once configured, use these tools directly in Claude Code:
 - `navigate` - Go to URLs
 - `screenshot` - Capture page images
-- `click` - Click elements by CSS selector
-- `fill` - Fill form fields
+- `click` / `fill` / `hover` / `select` - Interact with page elements
 - `evaluate` - Execute JavaScript
 - `get_content` - Extract page HTML/text
+- `emulate_device` / `reset_emulation` - Mobile device emulation with 17 presets
+- `start_screencast` / `stop_screencast` - Record browser activity to MP4/GIF/WebM
+- `get_console_logs` / `get_network_logs` - Monitor console and network
+- `run_audit_mode` - Run all audits (a11y, performance, SEO, best practices)
 - `close_browser` - Clean shutdown
 
 ## 🎯 Key Use Cases
