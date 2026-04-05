@@ -3,7 +3,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { spawn, execSync } from 'child_process';
+import { spawn, execSync, execFileSync } from 'child_process';
 import { WebSocket } from 'ws';
 import http from 'http';
 import fs from 'fs';
@@ -22,6 +22,13 @@ let consoleLogs = [];
 let consoleErrors = [];
 let networkLogs = [];
 let networkErrors = [];
+
+// Screencast state
+let screencastRecording = false;
+let screencastFrames = [];
+let screencastStartTime = null;
+let screencastFormat = 'jpeg';
+let screencastQuality = 80;
 
 // Mobile device presets
 const DEVICE_PRESETS = {
@@ -404,6 +411,73 @@ class DirectChromiumMCPServer {
           },
         },
         {
+          name: 'start_screencast',
+          description: 'Start recording a screencast of browser activity. Captures frames via CDP and encodes to MP4/GIF/WebM on stop.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              format: {
+                type: 'string',
+                enum: ['jpeg', 'png'],
+                description: 'Frame capture format (default: jpeg)',
+                default: 'jpeg',
+              },
+              quality: {
+                type: 'number',
+                description: 'Frame quality 1-100 for jpeg (default: 80)',
+                default: 80,
+              },
+              maxWidth: {
+                type: 'number',
+                description: 'Max frame width in pixels (default: 1280)',
+                default: 1280,
+              },
+              maxHeight: {
+                type: 'number',
+                description: 'Max frame height in pixels (default: 720)',
+                default: 720,
+              },
+              everyNthFrame: {
+                type: 'number',
+                description: 'Capture every Nth frame (default: 1 = every frame)',
+                default: 1,
+              },
+            },
+          },
+        },
+        {
+          name: 'stop_screencast',
+          description: 'Stop recording and encode the screencast to a video file. Returns the file path.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              output: {
+                type: 'string',
+                enum: ['mp4', 'gif', 'webm'],
+                description: 'Output format (default: mp4)',
+                default: 'mp4',
+              },
+              name: {
+                type: 'string',
+                description: 'Output filename without extension (default: screencast-<timestamp>)',
+              },
+              fps: {
+                type: 'number',
+                description: 'Output frame rate (default: auto-detected from capture)',
+                default: 0,
+              },
+            },
+          },
+        },
+        {
+          name: 'screencast_status',
+          description: 'Check screencast recording status: whether recording, frame count, and duration.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
           name: 'close_browser',
           description: 'Close the browser instance',
           inputSchema: {
@@ -465,6 +539,12 @@ class DirectChromiumMCPServer {
             return await this.emulateDevice(args);
           case 'reset_emulation':
             return await this.resetEmulation();
+          case 'start_screencast':
+            return await this.startScreencast(args);
+          case 'stop_screencast':
+            return await this.stopScreencast(args);
+          case 'screencast_status':
+            return await this.screencastStatus();
           case 'close_browser':
             return await this.closeBrowser();
           default:
@@ -600,6 +680,17 @@ class DirectChromiumMCPServer {
             // Keep only last 100 entries
             if (consoleLogs.length > 100) consoleLogs.shift();
             if (consoleErrors.length > 100) consoleErrors.shift();
+          }
+
+          if (message.method === 'Page.screencastFrame' && screencastRecording) {
+            screencastFrames.push({
+              data: message.params.data,
+              timestamp: message.params.metadata.timestamp,
+            });
+            // ACK the frame so CDP keeps sending them
+            this.sendCDPCommand('Page.screencastFrameAck', {
+              sessionId: message.params.sessionId,
+            }).catch(() => {});
           }
 
           if (message.method === 'Network.responseReceived') {
@@ -1218,7 +1309,158 @@ class DirectChromiumMCPServer {
     };
   }
 
+  async startScreencast(args = {}) {
+    await this.ensureChromium();
+
+    if (screencastRecording) {
+      throw new Error('Screencast already recording. Stop the current one first.');
+    }
+
+    screencastFrames = [];
+    screencastRecording = true;
+    screencastStartTime = Date.now();
+    screencastFormat = args.format || 'jpeg';
+    screencastQuality = args.quality || 80;
+
+    await this.sendCDPCommand('Page.startScreencast', {
+      format: screencastFormat,
+      quality: screencastFormat === 'jpeg' ? screencastQuality : undefined,
+      maxWidth: args.maxWidth || 1280,
+      maxHeight: args.maxHeight || 720,
+      everyNthFrame: args.everyNthFrame || 1,
+    });
+
+    return {
+      content: [{ type: 'text', text: `Screencast recording started (${screencastFormat}, quality=${screencastQuality})` }],
+    };
+  }
+
+  async stopScreencast(args = {}) {
+    await this.ensureChromium();
+
+    if (!screencastRecording) {
+      throw new Error('No screencast is currently recording.');
+    }
+
+    await this.sendCDPCommand('Page.stopScreencast');
+    screencastRecording = false;
+
+    const frameCount = screencastFrames.length;
+    if (frameCount === 0) {
+      return {
+        content: [{ type: 'text', text: 'Screencast stopped but no frames were captured. Try recording for longer or interacting with the page.' }],
+      };
+    }
+
+    const durationSec = (Date.now() - screencastStartTime) / 1000;
+    const outputFormat = args.output || 'mp4';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const baseName = args.name || `screencast-${timestamp}`;
+    const outputPath = `/tmp/${baseName}.${outputFormat}`;
+    const framesDir = `/tmp/screencast-frames-${timestamp}`;
+
+    // Write frames to temp directory
+    fs.mkdirSync(framesDir, { recursive: true });
+
+    const ext = screencastFormat === 'png' ? 'png' : 'jpg';
+    for (let i = 0; i < screencastFrames.length; i++) {
+      const framePath = path.join(framesDir, `frame-${String(i).padStart(6, '0')}.${ext}`);
+      fs.writeFileSync(framePath, screencastFrames[i].data, 'base64');
+    }
+
+    // Calculate fps from frame timestamps if not specified
+    let fps = args.fps || 0;
+    if (!fps && screencastFrames.length >= 2) {
+      const firstTs = screencastFrames[0].timestamp;
+      const lastTs = screencastFrames[screencastFrames.length - 1].timestamp;
+      const spanSec = lastTs - firstTs;
+      fps = spanSec > 0 ? Math.round(screencastFrames.length / spanSec) : 10;
+    }
+    fps = Math.max(fps || 10, 1);
+    fps = Math.min(fps, 60);
+
+    const inputPattern = path.join(framesDir, `frame-%06d.${ext}`);
+    const gifFps = Math.min(fps, 15);
+
+    // Encode with ffmpeg using execFileSync (no shell)
+    try {
+      if (outputFormat === 'gif') {
+        const palettePath = path.join(framesDir, 'palette.png');
+        execFileSync('ffmpeg', [
+          '-y', '-framerate', String(fps),
+          '-i', inputPattern,
+          '-vf', `fps=${gifFps},scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=lanczos,palettegen`,
+          palettePath,
+        ], { timeout: 30000, stdio: 'pipe' });
+
+        execFileSync('ffmpeg', [
+          '-y', '-framerate', String(fps),
+          '-i', inputPattern,
+          '-i', palettePath,
+          '-lavfi', `fps=${gifFps},scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=lanczos[x];[x][1:v]paletteuse`,
+          outputPath,
+        ], { timeout: 60000, stdio: 'pipe' });
+      } else if (outputFormat === 'webm') {
+        execFileSync('ffmpeg', [
+          '-y', '-framerate', String(fps),
+          '-i', inputPattern,
+          '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0',
+          '-pix_fmt', 'yuv420p',
+          outputPath,
+        ], { timeout: 60000, stdio: 'pipe' });
+      } else {
+        execFileSync('ffmpeg', [
+          '-y', '-framerate', String(fps),
+          '-i', inputPattern,
+          '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+          '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+          outputPath,
+        ], { timeout: 60000, stdio: 'pipe' });
+      }
+    } catch (ffmpegError) {
+      fs.rmSync(framesDir, { recursive: true, force: true });
+      throw new Error(`ffmpeg encoding failed: ${ffmpegError.stderr?.toString() || ffmpegError.message}`);
+    }
+
+    // Clean up frames
+    fs.rmSync(framesDir, { recursive: true, force: true });
+
+    const stats = fs.statSync(outputPath);
+    const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+
+    const capturedFrames = screencastFrames.length;
+    screencastFrames = [];
+
+    return {
+      content: [{ type: 'text', text: `Screencast saved: ${outputPath}\nFormat: ${outputFormat} | Frames: ${capturedFrames} | Duration: ${durationSec.toFixed(1)}s | FPS: ${fps} | Size: ${sizeMB}MB` }],
+    };
+  }
+
+  async screencastStatus() {
+    const status = {
+      recording: screencastRecording,
+      frames: screencastFrames.length,
+      duration: screencastRecording ? `${((Date.now() - screencastStartTime) / 1000).toFixed(1)}s` : null,
+      format: screencastRecording ? screencastFormat : null,
+    };
+
+    const text = screencastRecording
+      ? `Recording: ${status.frames} frames captured over ${status.duration} (${screencastFormat})`
+      : `Not recording. ${screencastFrames.length > 0 ? `${screencastFrames.length} frames buffered from last recording.` : 'No frames buffered.'}`;
+
+    return {
+      content: [{ type: 'text', text }],
+    };
+  }
+
   async closeBrowser() {
+    // Stop any active screencast
+    if (screencastRecording) {
+      screencastRecording = false;
+      screencastFrames = [];
+      try { await this.sendCDPCommand('Page.stopScreencast'); } catch (e) { /* ignore */ }
+    }
+
     if (wsConnection) {
       wsConnection.close();
       wsConnection = null;

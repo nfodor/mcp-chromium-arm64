@@ -441,6 +441,106 @@
         "capabilities": ["device_emulation", "viewport_reset"]
       },
       {
+        "name": "start_screencast",
+        "description": "Start recording a screencast of browser activity via CDP Page.startScreencast",
+        "category": "capture",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": ["jpeg", "png"],
+              "description": "Frame capture format (default: jpeg)",
+              "default": "jpeg"
+            },
+            "quality": {
+              "type": "number",
+              "description": "Frame quality 1-100 for jpeg (default: 80)",
+              "default": 80
+            },
+            "maxWidth": {
+              "type": "number",
+              "description": "Max frame width in pixels (default: 1280)",
+              "default": 1280
+            },
+            "maxHeight": {
+              "type": "number",
+              "description": "Max frame height in pixels (default: 720)",
+              "default": 720
+            },
+            "everyNthFrame": {
+              "type": "number",
+              "description": "Capture every Nth frame (default: 1)",
+              "default": 1
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "message": {"type": "string"}
+          }
+        },
+        "example_usage": "Start recording a screencast before running a test flow",
+        "capabilities": ["video_capture", "debugging", "demo_recording"]
+      },
+      {
+        "name": "stop_screencast",
+        "description": "Stop recording and encode the screencast to MP4, GIF, or WebM via ffmpeg",
+        "category": "capture",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "output": {
+              "type": "string",
+              "enum": ["mp4", "gif", "webm"],
+              "description": "Output format (default: mp4)",
+              "default": "mp4"
+            },
+            "name": {
+              "type": "string",
+              "description": "Output filename without extension"
+            },
+            "fps": {
+              "type": "number",
+              "description": "Output frame rate (default: auto-detected from capture)"
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "path": {"type": "string"},
+            "frames": {"type": "number"},
+            "duration": {"type": "number"},
+            "size": {"type": "string"}
+          }
+        },
+        "example_usage": "Stop recording and save as screencast-login-flow.mp4",
+        "capabilities": ["video_encoding", "debugging", "demo_recording"]
+      },
+      {
+        "name": "screencast_status",
+        "description": "Check screencast recording status, frame count, and duration",
+        "category": "capture",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "recording": {"type": "boolean"},
+            "frames": {"type": "number"},
+            "duration": {"type": "string"}
+          }
+        },
+        "example_usage": "Check how many frames have been captured so far",
+        "capabilities": ["monitoring", "debugging"]
+      },
+      {
         "name": "close_browser",
         "description": "Close the browser instance and clean up resources",
         "category": "lifecycle",
@@ -462,7 +562,7 @@
     "tool_categories": {
       "navigation": ["navigate"],
       "interaction": ["click", "fill", "hover", "select"],
-      "capture": ["screenshot"],
+      "capture": ["screenshot", "start_screencast", "stop_screencast", "screencast_status"],
       "monitoring": ["get_console_logs", "get_console_errors", "get_network_logs"],
       "extraction": ["get_content"],
       "execution": ["evaluate"],
@@ -502,6 +602,14 @@
         "screenshot",
         "get_console_errors",
         "reset_emulation"
+      ],
+      "screencast_recording": [
+        "navigate",
+        "start_screencast",
+        "click",
+        "fill",
+        "screencast_status",
+        "stop_screencast"
       ]
     },
     "integration_examples": {
