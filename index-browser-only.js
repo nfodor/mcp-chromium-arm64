@@ -351,6 +351,7 @@ class BrowserOnlyMCPServer {
     await this.ensureChromium();
     
     const screenshotParams = { format: 'png' };
+    let truncationNote = '';
     
     if (fullPage) {
       // Scroll the whole page once to trigger lazy-loaded / scroll-dependent
@@ -373,11 +374,22 @@ class BrowserOnlyMCPServer {
       // viewport. Prefer CSS-pixel content size; fall back for older Chrome.
       const metrics = await this.sendCDPCommand('Page.getLayoutMetrics');
       const content = metrics.cssContentSize || metrics.contentSize;
+
+      // Chrome can't render a single screenshot past a height limit (~16k px
+      // GPU texture cap; higher under --disable-gpu software rendering). Cap
+      // the capture and warn instead of silently clipping. Override via
+      // CHROMIUM_MAX_SCREENSHOT_HEIGHT.
+      const maxHeight = parseInt(process.env.CHROMIUM_MAX_SCREENSHOT_HEIGHT || '32768', 10);
+      const fullHeight = Math.ceil(content.height);
+      const clipHeight = Math.min(fullHeight, maxHeight);
+      if (fullHeight > maxHeight) {
+        truncationNote = ` (warning: page is ${fullHeight}px tall; captured top ${maxHeight}px — Chrome rendering limit. Set CHROMIUM_MAX_SCREENSHOT_HEIGHT to raise it.)`;
+      }
       screenshotParams.clip = {
         x: 0,
         y: 0,
         width: Math.ceil(content.width),
-        height: Math.ceil(content.height),
+        height: clipHeight,
         scale: 1,
       };
       screenshotParams.captureBeyondViewport = true;
@@ -389,7 +401,7 @@ class BrowserOnlyMCPServer {
     fs.writeFileSync(screenshotPath, screenshot.data, 'base64');
     
     return {
-      content: [{ type: 'text', text: `Screenshot saved to ${screenshotPath}` }],
+      content: [{ type: 'text', text: `Screenshot saved to ${screenshotPath}${truncationNote}` }],
     };
   }
 
