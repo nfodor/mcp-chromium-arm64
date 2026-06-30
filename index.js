@@ -151,7 +151,7 @@ class DirectChromiumMCPServer {
         },
         {
           name: 'screenshot',
-          description: 'Take a screenshot of the current page',
+          description: 'Take a screenshot of the current page (use fullPage for the entire scrollable length)',
           inputSchema: {
             type: 'object',
             properties: {
@@ -162,7 +162,7 @@ class DirectChromiumMCPServer {
               },
               fullPage: {
                 type: 'boolean',
-                description: 'Capture full page',
+                description: 'Capture the entire scrollable page including content below the fold, not just the visible viewport',
                 default: false,
               },
             },
@@ -780,14 +780,34 @@ class DirectChromiumMCPServer {
     
     const screenshotParams = { format: 'png' };
     if (fullPage) {
+      // Scroll the whole page once to trigger lazy-loaded / scroll-dependent
+      // content, then return to the top. Bounded to stay under the CDP timeout.
+      await this.sendCDPCommand('Runtime.evaluate', {
+        expression: `(async () => {
+          const step = window.innerHeight || 800;
+          const max = Math.min(document.body.scrollHeight, step * 40);
+          for (let y = 0; y < max; y += step) {
+            window.scrollTo(0, y);
+            await new Promise(r => setTimeout(r, 50));
+          }
+          window.scrollTo(0, 0);
+          await new Promise(r => setTimeout(r, 100));
+        })()`,
+        awaitPromise: true
+      });
+
+      // captureBeyondViewport is required to render content outside the current
+      // viewport. Prefer CSS-pixel content size; fall back for older Chrome.
       const metrics = await this.sendCDPCommand('Page.getLayoutMetrics');
+      const content = metrics.cssContentSize || metrics.contentSize;
       screenshotParams.clip = {
         x: 0,
         y: 0,
-        width: metrics.contentSize.width,
-        height: metrics.contentSize.height,
+        width: Math.ceil(content.width),
+        height: Math.ceil(content.height),
         scale: 1
       };
+      screenshotParams.captureBeyondViewport = true;
     }
     
     const result = await this.sendCDPCommand('Page.captureScreenshot', screenshotParams);
