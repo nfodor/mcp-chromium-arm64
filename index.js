@@ -916,17 +916,15 @@ class DirectChromiumMCPServer {
   async select(selector, value) {
     await this.ensureChromium();
     
+    const expression = `(function(sel, val){
+      const s = document.querySelector(sel);
+      if (!s) return false;
+      s.value = val;
+      s.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    })(${JSON.stringify(selector)}, ${JSON.stringify(value)})`;
     const result = await this.sendCDPCommand('Runtime.evaluate', {
-      expression: `
-        const select = document.querySelector('${selector}');
-        if (select) {
-          select.value = '${value}';
-          select.dispatchEvent(new Event('change', { bubbles: true }));
-          true;
-        } else {
-          false;
-        }
-      `,
+      expression,
       returnByValue: true
     });
     

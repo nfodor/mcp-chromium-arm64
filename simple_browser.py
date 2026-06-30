@@ -11,76 +11,54 @@ import sys
 # Dynamically determine the server directory
 SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def browser_navigate(url):
-    """Navigate to URL using ARM64 Chromium."""
-    cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"navigate\\",\\"arguments\\":{{\\"url\\":\\"{url}\\"}}}},\\"id\\":1}}" | node index.js\''
-    
+def _call(name, args, fallback):
+    """Send a JSON-RPC tools/call to index.js over stdin (no shell)."""
+    request = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {"name": name, "arguments": args},
+        "id": 1,
+    }
+
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
-        
+        result = subprocess.run(
+            ["node", os.path.join(SERVER_DIR, "index.js")],
+            input=json.dumps(request),
+            text=True,
+            capture_output=True,
+            timeout=15,
+            cwd=SERVER_DIR,
+        )
+
         # Look for JSON in both stdout and stderr
         all_output = result.stdout + result.stderr
-        
+
         # Find the JSON response line
         for line in all_output.split('\n'):
             if '{"result"' in line:
                 try:
                     response = json.loads(line)
                     content = response.get('result', {}).get('content', [{}])
-                    return content[0].get('text', f'Navigation completed to {url}')
-                except:
+                    return content[0].get('text', fallback)
+                except json.JSONDecodeError:
                     continue
-        
-        return f"Successfully called navigate for {url}"
-        
+
+        return fallback
+
     except Exception as e:
         return f"Error: {e}"
+
+def browser_navigate(url):
+    """Navigate to URL using ARM64 Chromium."""
+    return _call("navigate", {"url": url}, f"Successfully called navigate for {url}")
 
 def browser_screenshot(name="test.png"):
     """Take screenshot using ARM64 Chromium."""
-    cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"screenshot\\",\\"arguments\\":{{\\"name\\":\\"{name}\\"}}}},\\"id\\":1}}" | node index.js\''
-    
-    try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
-        
-        all_output = result.stdout + result.stderr
-        
-        for line in all_output.split('\n'):
-            if '{"result"' in line:
-                try:
-                    response = json.loads(line)
-                    content = response.get('result', {}).get('content', [{}])
-                    return content[0].get('text', f'Screenshot saved as {name}')
-                except:
-                    continue
-        
-        return f"Screenshot command sent for {name}"
-        
-    except Exception as e:
-        return f"Error: {e}"
+    return _call("screenshot", {"name": name}, f"Screenshot command sent for {name}")
 
 def browser_evaluate(script):
     """Execute JavaScript using ARM64 Chromium."""
-    cmd = f'timeout 15s bash -c \'echo "{{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"tools/call\\",\\"params\\":{{\\"name\\":\\"evaluate\\",\\"arguments\\":{{\\"script\\":\\"{script}\\"}}}},\\"id\\":1}}" | node index.js\''
-    
-    try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=SERVER_DIR)
-        
-        all_output = result.stdout + result.stderr
-        
-        for line in all_output.split('\n'):
-            if '{"result"' in line:
-                try:
-                    response = json.loads(line)
-                    content = response.get('result', {}).get('content', [{}])
-                    return content[0].get('text', 'Script executed')
-                except:
-                    continue
-        
-        return f"JavaScript executed: {script}"
-        
-    except Exception as e:
-        return f"Error: {e}"
+    return _call("evaluate", {"script": script}, "Script executed")
 
 if __name__ == "__main__":
     print("=== Simple ARM64 Browser Demo ===")
