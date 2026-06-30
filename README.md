@@ -158,7 +158,7 @@ python3 simple_browser.py
 
 ## 🛠️ Developer Guide & Debugging
 
-### 🔧 Available MCP Tools (27 total)
+### 🔧 Available MCP Tools (29 total)
 
 #### Core Browser Control
 - `navigate` - Navigate to URLs with full page loading
@@ -177,6 +177,10 @@ python3 simple_browser.py
 - `get_network_errors` - Track failed network requests (4xx/5xx)
 - `wipe_logs` - Clear all stored logs from memory
 - `get_selected_element` - Get info about currently focused element
+
+#### Session & Authentication
+- `set_cookies` - Import cookies (e.g. exported after logging in elsewhere) to authenticate without scripting the login form
+- `get_cookies` - Export the current session's cookies as JSON (round-trips with `set_cookies`)
 
 #### Mobile Device Emulation
 - `emulate_device` - Emulate mobile devices with 17 presets or custom viewport/UA/DPR/touch, with landscape support
@@ -200,6 +204,28 @@ python3 simple_browser.py
 - `run_debugger_mode` - Comprehensive debugging information
 - `run_audit_mode` - Run all audits together with summary
 - `close_browser` - Clean shutdown of chromium process
+
+### 🔐 Authenticated Review (login-required sites)
+
+To review pages behind a login (e.g. `x.com`) you don't have to script the login form, captcha, or 2FA. Log in once in your normal browser, export the cookies, inject them, then navigate.
+
+1. **Log in** to the site in your regular browser.
+2. **Export the cookies** with [Cookie-Editor](https://cookie-editor.com/) (Chrome / Firefox / Edge / Safari / Opera): open it on the logged-in tab → **Export → JSON**. An extension export is required for `httpOnly` cookies (e.g. x.com's `auth_token`), which `document.cookie` cannot read.
+3. **Inject and review** via the MCP:
+
+```bash
+# 1) import the exported cookies (replace the [...] with the Cookie-Editor JSON array)
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"set_cookies","arguments":{"url":"https://x.com","cookies":[]}}}' | node index.js
+
+# 2) navigate to the page you want — now authenticated
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"navigate","arguments":{"url":"https://x.com/home"}}}' | node index.js
+```
+
+The session stays authenticated for the life of the browser process. Use `get_cookies` to export it back out for reuse.
+
+> **Format:** `set_cookies` accepts the [Cookie-Editor](https://cookie-editor.com/) / EditThisCookie JSON export directly — it normalizes `sameSite` (`no_restriction` → `None`), accepts `expirationDate`, and honors session cookies. Pass a top-level `url` for any cookie that omits a domain.
+>
+> **Security:** cookies are session secrets and pass through as tool arguments, so they appear in logs/transcripts. Treat an exported `auth_token` like a password — log out / rotate when done.
 
 ### 🐛 Debugging & Development
 
