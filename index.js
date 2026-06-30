@@ -490,10 +490,13 @@ class DirectChromiumMCPServer {
               },
               url: {
                 type: 'string',
-                description: 'Optional default URL applied to cookies that omit a domain (e.g. https://x.com)',
+                description: 'Default URL applied to cookies that omit a domain (e.g. https://x.com). Required when using cookieHeader.',
+              },
+              cookieHeader: {
+                type: 'string',
+                description: 'Raw Cookie header string ("name=value; name2=value2") as an alternative to cookies[]. Requires url. Can be combined with cookies[].',
               },
             },
-            required: ['cookies'],
           },
         },
         {
@@ -573,7 +576,7 @@ class DirectChromiumMCPServer {
           case 'screencast_status':
             return await this.screencastStatus();
           case 'set_cookies':
-            return await this.setCookies(args.cookies, args.url);
+            return await this.setCookies(args.cookies, args.url, args.cookieHeader);
           case 'get_cookies':
             return await this.getCookies();
           case 'close_browser':
@@ -603,7 +606,7 @@ class DirectChromiumMCPServer {
   async startChromium() {
     return new Promise((resolve, reject) => {
       const chromiumPath = getChromiumPath();
-      chromiumProcess = spawn(chromiumPath, [
+      const args = [
         '--headless',
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -621,7 +624,13 @@ class DirectChromiumMCPServer {
         '--no-zygote',
         '--disable-accelerated-2d-canvas',
         `--window-size=${chromiumWindowSize}`
-      ]);
+      ];
+      // Opt-in persistent profile: set CHROMIUM_USER_DATA_DIR to keep cookies /
+      // logins across restarts. Unset = ephemeral profile (default).
+      if (process.env.CHROMIUM_USER_DATA_DIR) {
+        args.push(`--user-data-dir=${process.env.CHROMIUM_USER_DATA_DIR}`);
+      }
+      chromiumProcess = spawn(chromiumPath, args);
 
       chromiumProcess.on('error', reject);
       
@@ -1514,10 +1523,26 @@ class DirectChromiumMCPServer {
     };
   }
 
-  async setCookies(cookies, url) {
+  async setCookies(cookies, url, cookieHeader) {
     await this.ensureChromium();
-    if (!Array.isArray(cookies) || cookies.length === 0) {
-      throw new Error('set_cookies requires a non-empty "cookies" array');
+
+    const list = Array.isArray(cookies) ? cookies.slice() : [];
+    if (typeof cookieHeader === 'string' && cookieHeader.trim()) {
+      if (!url) {
+        throw new Error('cookieHeader requires a top-level "url" (a raw Cookie header carries no domain), e.g. https://x.com');
+      }
+      for (const pair of cookieHeader.split(';')) {
+        const part = pair.trim();
+        if (!part) continue;
+        const eq = part.indexOf('=');
+        if (eq === -1) continue;
+        const name = part.slice(0, eq).trim();
+        if (!name) continue;
+        list.push({ name, value: part.slice(eq + 1).trim() });
+      }
+    }
+    if (list.length === 0) {
+      throw new Error('set_cookies requires "cookies" (array) and/or "cookieHeader" (string)');
     }
     await this.sendCDPCommand('Network.enable');
 
@@ -1530,7 +1555,7 @@ class DirectChromiumMCPServer {
       return undefined; // 'unspecified' etc. -> let Chrome decide
     };
 
-    const prepared = cookies.map((c) => {
+    const prepared = list.map((c) => {
       const out = { name: c.name, value: String(c.value) };
       if (c.domain) out.domain = c.domain;
       if (c.path) out.path = c.path;

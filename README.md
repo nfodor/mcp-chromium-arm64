@@ -223,9 +223,21 @@ echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"navigate",
 
 The session stays authenticated for the life of the browser process. Use `get_cookies` to export it back out for reuse.
 
-> **Format:** `set_cookies` accepts the [Cookie-Editor](https://cookie-editor.com/) / EditThisCookie JSON export directly — it normalizes `sameSite` (`no_restriction` → `None`), accepts `expirationDate`, and honors session cookies. Pass a top-level `url` for any cookie that omits a domain.
+**Alternative — raw Cookie header.** Instead of the JSON array you can paste a raw `Cookie:` header string via `cookieHeader` (requires `url`, since a header carries no domain):
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"set_cookies","arguments":{"url":"https://x.com","cookieHeader":"auth_token=abc123; ct0=def456"}}}' | node index.js
+```
+
+**Persist across restarts.** By default the profile is ephemeral, so the session is lost when the browser process exits. Set `CHROMIUM_USER_DATA_DIR` to a writable path and cookies/logins survive restarts — log in (or inject cookies) once and reuse:
+
+```bash
+export CHROMIUM_USER_DATA_DIR="$HOME/.mcp-chromium-arm64/profile"
+```
+
+> **Format:** `set_cookies` accepts the [Cookie-Editor](https://cookie-editor.com/) / EditThisCookie JSON export directly — it normalizes `sameSite` (`no_restriction` → `None`), accepts `expirationDate`, and honors session cookies. Pass a top-level `url` for any cookie that omits a domain, or use `cookieHeader` for a raw header string. `cookies[]` and `cookieHeader` can be combined.
 >
-> **Security:** cookies are session secrets and pass through as tool arguments, so they appear in logs/transcripts. Treat an exported `auth_token` like a password — log out / rotate when done.
+> **Security:** cookies are session secrets and pass through as tool arguments, so they appear in logs/transcripts. Treat an exported `auth_token` like a password — log out / rotate when done. A persistent `CHROMIUM_USER_DATA_DIR` stores the live session on disk, so protect that directory too.
 
 ### 🐛 Debugging & Development
 
@@ -518,6 +530,12 @@ async myCustomTool(param) {
 ```bash
 # Set browser window size (default: 1280,720)
 export CHROMIUM_WINDOW_SIZE=1920,1080
+
+# Cap full-page screenshot height in px (default: 32768)
+export CHROMIUM_MAX_SCREENSHOT_HEIGHT=32768
+
+# Persistent profile: keep cookies / logins across restarts (default: ephemeral when unset)
+export CHROMIUM_USER_DATA_DIR="$HOME/.mcp-chromium-arm64/profile"
 ```
 
 #### Chrome Launch Options
