@@ -478,6 +478,33 @@ class DirectChromiumMCPServer {
           },
         },
         {
+          name: 'set_cookies',
+          description: 'Import cookies (e.g. exported after logging in elsewhere) so the browser is authenticated without scripting the login form. Accepts an array of cookie objects. Auth-critical cookies like x.com auth_token are httpOnly and must come from a real export (DevTools / Cookie-Editor), not document.cookie.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              cookies: {
+                type: 'array',
+                description: 'Array of cookie objects: { name, value, domain, path?, secure?, httpOnly?, sameSite?, expires?|expirationDate? }. Accepts Cookie-Editor / EditThisCookie export format.',
+                items: { type: 'object' },
+              },
+              url: {
+                type: 'string',
+                description: 'Optional default URL applied to cookies that omit a domain (e.g. https://x.com)',
+              },
+            },
+            required: ['cookies'],
+          },
+        },
+        {
+          name: 'get_cookies',
+          description: 'Export all cookies from the current browser session as a JSON array (round-trips with set_cookies).',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
           name: 'close_browser',
           description: 'Close the browser instance',
           inputSchema: {
@@ -545,6 +572,10 @@ class DirectChromiumMCPServer {
             return await this.stopScreencast(args);
           case 'screencast_status':
             return await this.screencastStatus();
+          case 'set_cookies':
+            return await this.setCookies(args.cookies, args.url);
+          case 'get_cookies':
+            return await this.getCookies();
           case 'close_browser':
             return await this.closeBrowser();
           default:
@@ -1480,6 +1511,59 @@ class DirectChromiumMCPServer {
 
     return {
       content: [{ type: 'text', text }],
+    };
+  }
+
+  async setCookies(cookies, url) {
+    await this.ensureChromium();
+    if (!Array.isArray(cookies) || cookies.length === 0) {
+      throw new Error('set_cookies requires a non-empty "cookies" array');
+    }
+    await this.sendCDPCommand('Network.enable');
+
+    const normSameSite = (s) => {
+      if (!s) return undefined;
+      const v = String(s).toLowerCase();
+      if (v === 'no_restriction' || v === 'none') return 'None';
+      if (v === 'lax') return 'Lax';
+      if (v === 'strict') return 'Strict';
+      return undefined; // 'unspecified' etc. -> let Chrome decide
+    };
+
+    const prepared = cookies.map((c) => {
+      const out = { name: c.name, value: String(c.value) };
+      if (c.domain) out.domain = c.domain;
+      if (c.path) out.path = c.path;
+      // Network.setCookies needs domain OR url; fall back to the default url.
+      if (!out.domain) out.url = c.url || url;
+      if (c.secure !== undefined) out.secure = !!c.secure;
+      if (c.httpOnly !== undefined) out.httpOnly = !!c.httpOnly;
+      const ss = normSameSite(c.sameSite);
+      if (ss) out.sameSite = ss;
+      // Session cookies omit expiry; accept CDP `expires` or extension `expirationDate`.
+      if (!c.session) {
+        const exp = c.expires !== undefined ? c.expires : c.expirationDate;
+        if (exp !== undefined) out.expires = Math.floor(Number(exp));
+      }
+      if (!out.domain && !out.url) {
+        throw new Error(`Cookie "${c.name}" needs a domain or a url (pass a top-level url, e.g. https://x.com)`);
+      }
+      return out;
+    });
+
+    await this.sendCDPCommand('Network.setCookies', { cookies: prepared });
+    return {
+      content: [{ type: 'text', text: `Set ${prepared.length} cookie(s)${url ? ' (default url ' + url + ')' : ''}. Navigate to the target page to use the authenticated session.` }],
+    };
+  }
+
+  async getCookies() {
+    await this.ensureChromium();
+    await this.sendCDPCommand('Network.enable');
+    const result = await this.sendCDPCommand('Network.getAllCookies');
+    const cookies = result.cookies || [];
+    return {
+      content: [{ type: 'text', text: JSON.stringify(cookies, null, 2) }],
     };
   }
 
