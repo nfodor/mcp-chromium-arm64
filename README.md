@@ -536,7 +536,19 @@ export CHROMIUM_MAX_SCREENSHOT_HEIGHT=32768
 
 # Persistent profile: keep cookies / logins across restarts (default: ephemeral when unset)
 export CHROMIUM_USER_DATA_DIR="$HOME/.mcp-chromium-arm64/profile"
+
+# Use a specific Chromium-family binary (Chrome, Edge, Brave, Opera, Vivaldi, Chromium).
+# Overrides auto-detection; point it at any Chromium-based browser.
+export CHROMIUM_PATH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+
+# Launch a visible (headful) window instead of headless — e.g. to log into a site
+# by hand once into a persistent profile (default: headless when unset)
+export CHROMIUM_HEADLESS=false
 ```
+
+**Browser support:** auto-detects any Chromium-family browser — Chrome, Chromium, Microsoft Edge, Brave, Opera, Vivaldi (Firefox/Safari are not supported; the server speaks Chrome DevTools Protocol). Set `CHROMIUM_PATH` to force a specific binary.
+
+**Headful login (no cookie-export extension needed):** set `CHROMIUM_USER_DATA_DIR` + `CHROMIUM_HEADLESS=false`, log into a site (X, LinkedIn, …) by hand once in the visible window, then drop `CHROMIUM_HEADLESS` — the persistent profile keeps you logged in for subsequent headless runs. This also beats headless bot-detection since you sign in as a normal user.
 
 #### Chrome Launch Options
 ```javascript

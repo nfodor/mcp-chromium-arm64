@@ -57,15 +57,27 @@ const DEVICE_PRESETS = {
 
 // Helper function to find Chromium executable
 function getChromiumPath() {
+  // Explicit override always wins — point at any Chromium-family binary
+  // (Chrome, Edge, Brave, Opera, Vivaldi, or plain Chromium).
+  if (process.env.CHROMIUM_PATH) {
+    return process.env.CHROMIUM_PATH;
+  }
+
   const platform = os.platform();
   
   if (platform === 'linux') {
-    // Try common Linux paths
+    // Try common Linux paths (Chromium family)
     const linuxPaths = [
       '/usr/bin/chromium-browser',
       '/usr/bin/chromium',
+      '/snap/bin/chromium',
       '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable'
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/microsoft-edge',
+      '/usr/bin/microsoft-edge-stable',
+      '/usr/bin/brave-browser',
+      '/usr/bin/opera',
+      '/usr/bin/vivaldi'
     ];
     
     for (const chromePath of linuxPaths) {
@@ -74,11 +86,15 @@ function getChromiumPath() {
       }
     }
   } else if (platform === 'darwin') {
-    // macOS paths
+    // macOS paths (Chromium family)
     const macPaths = [
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       '/Applications/Chromium.app/Contents/MacOS/Chromium',
-      '/opt/homebrew/bin/chromium'
+      '/opt/homebrew/bin/chromium',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+      '/Applications/Opera.app/Contents/MacOS/Opera',
+      '/Applications/Vivaldi.app/Contents/MacOS/Vivaldi'
     ];
     
     for (const chromePath of macPaths) {
@@ -87,11 +103,13 @@ function getChromiumPath() {
       }
     }
   } else if (platform === 'win32') {
-    // Windows paths
+    // Windows paths (Chromium family)
     const winPaths = [
       'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files\\Chromium\\Application\\chrome.exe'
+      'C:\\Program Files\\Chromium\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
     ];
     
     for (const chromePath of winPaths) {
@@ -101,9 +119,9 @@ function getChromiumPath() {
     }
   }
   
-  // Try to find via which command
+  // Try to find via which command (Chromium family)
   try {
-    const result = execSync('which chromium-browser || which chromium || which google-chrome', { encoding: 'utf8' }).trim();
+    const result = execSync('which chromium-browser || which chromium || which google-chrome || which microsoft-edge || which brave-browser', { encoding: 'utf8' }).trim();
     if (result) {
       return result.split('\n')[0];
     }
@@ -111,7 +129,7 @@ function getChromiumPath() {
     // Ignore error, will throw below
   }
   
-  throw new Error(`Could not find Chromium browser. Please install it for your platform.`);
+  throw new Error(`Could not find a Chromium-family browser. Install Chrome/Chromium/Edge/Brave, or set CHROMIUM_PATH to the binary.`);
 }
 
 class DirectChromiumMCPServer {
@@ -629,6 +647,12 @@ class DirectChromiumMCPServer {
       // logins across restarts. Unset = ephemeral profile (default).
       if (process.env.CHROMIUM_USER_DATA_DIR) {
         args.push(`--user-data-dir=${process.env.CHROMIUM_USER_DATA_DIR}`);
+      }
+      // Headful mode: set CHROMIUM_HEADLESS=false to launch a visible window
+      // (e.g. to log in to a site by hand once into a persistent profile).
+      if (process.env.CHROMIUM_HEADLESS === 'false' || process.env.CHROMIUM_HEADLESS === '0') {
+        const i = args.indexOf('--headless');
+        if (i !== -1) args.splice(i, 1);
       }
       chromiumProcess = spawn(chromiumPath, args);
 
