@@ -100,6 +100,25 @@ function openSession(env = {}) {
   return { call, text, evalText, close };
 }
 
+// Capture the exact args our server launches Chrome with, via a stub "browser"
+// (needs no real Chromium) — proves managed profile, disk-cache cap, headful/persistent.
+const STUB = path.join(os.tmpdir(), `smoke_stub_${process.pid}.sh`);
+fs.writeFileSync(STUB, '#!/bin/sh\nprintf "%s\\n" "$@" > "$FAKE_ARGS_FILE"\nsleep 5\n');
+fs.chmodSync(STUB, 0o755);
+let argRun = 0;
+async function capturedArgs(env = {}) {
+  const argsFile = path.join(os.tmpdir(), `smoke_args_${process.pid}_${++argRun}.txt`);
+  try { fs.unlinkSync(argsFile); } catch {}
+  const child = spawn('node', ['index.js'], { cwd: SERVER_DIR, env: { ...process.env, ...env, CHROMIUM_PATH: STUB, FAKE_ARGS_FILE: argsFile } });
+  child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'navigate', arguments: { url: 'http://127.0.0.1:1/' } }, id: 1 }) + '\n');
+  await sleep(3000);
+  child.kill();
+  let out = ''; try { out = fs.readFileSync(argsFile, 'utf8'); } catch {}
+  try { fs.unlinkSync(argsFile); } catch {}
+  return out.split('\n').filter(Boolean);
+}
+const profileCount = () => { try { return fs.readdirSync(os.tmpdir()).filter((n) => n.startsWith('mcp-chromium-profile-')).length; } catch { return 0; } };
+
 async function main() {
   const fixture = await startFixtureServer();
   const base = `http://127.0.0.1:${fixture.address().port}`;
@@ -108,6 +127,16 @@ async function main() {
   const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'smoke_profile_'));
 
   console.log(`\nChromium ARM64 MCP — smoke test\nfixture: ${base}  (ffmpeg: ${hasFfmpeg})\n`);
+
+  console.log('launch args (stub browser, no real Chrome needed):');
+  const dflt = await capturedArgs({});
+  check('ephemeral uses a managed --user-data-dir', dflt.some((a) => a.startsWith('--user-data-dir=') && a.includes('mcp-chromium-profile-')), dflt.join(' '));
+  check('disk-cache cap applied', dflt.some((a) => /^--disk-cache-size=\d+$/.test(a)), dflt.join(' '));
+  check('default launch is headless', dflt.includes('--headless'));
+  const persist = await capturedArgs({ CHROMIUM_USER_DATA_DIR: '/tmp/smoke_persist_xyz' });
+  check('persistent dir used verbatim (not managed)', persist.includes('--user-data-dir=/tmp/smoke_persist_xyz'), persist.join(' '));
+  const headful = await capturedArgs({ CHROMIUM_HEADLESS: 'false' });
+  check('CHROMIUM_HEADLESS=false drops --headless', !headful.includes('--headless'));
 
   const s1 = openSession();
   try {
@@ -185,6 +214,7 @@ async function main() {
   } finally {
     await s1.close();
   }
+  check('managed profile cleaned after session close', profileCount() === 0, `${profileCount()} left`);
 
   console.log('height cap:');
   const s2 = openSession({ CHROMIUM_MAX_SCREENSHOT_HEIGHT: '1000' });
@@ -212,6 +242,8 @@ async function main() {
 
   fixture.close();
   fs.rmSync(profileDir, { recursive: true, force: true });
+  try { fs.unlinkSync(STUB); } catch {}
+  check('no orphaned managed profiles remain', profileCount() === 0, `${profileCount()} left`);
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed === 0 ? 0 : 1);
 }

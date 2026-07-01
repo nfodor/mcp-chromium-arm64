@@ -15,6 +15,8 @@ let chromiumProcess = null;
 let wsConnection = null;
 let currentTabId = null;
 let debuggingPort = 9222;
+let managedProfileDir = null; // server-owned temp profile dir, deleted on close
+const MANAGED_PROFILE_PREFIX = 'mcp-chromium-profile-';
 
 // Helper function to find Chromium executable
 function getChromiumPath() {
@@ -92,6 +94,26 @@ function getChromiumPath() {
   
   throw new Error(`Could not find a Chromium-family browser. Install Chrome/Chromium/Edge/Brave, or set CHROMIUM_PATH to the binary.`);
 }
+
+// --- Profile hygiene: prevent orphaned Chrome profile/cache dirs (disk-leak vector) ---
+function cleanupManagedProfile() {
+  if (!managedProfileDir) return;
+  try { fs.rmSync(managedProfileDir, { recursive: true, force: true }); } catch {}
+  managedProfileDir = null;
+}
+function sweepStaleProfiles() {
+  // Remove server-owned profiles left behind by prior crashed / hard-killed runs.
+  try {
+    const tmp = os.tmpdir();
+    for (const name of fs.readdirSync(tmp)) {
+      if (name.startsWith(MANAGED_PROFILE_PREFIX)) {
+        try { fs.rmSync(path.join(tmp, name), { recursive: true, force: true }); } catch {}
+      }
+    }
+  } catch {}
+}
+sweepStaleProfiles();
+process.on('exit', cleanupManagedProfile);
 
 class BrowserOnlyMCPServer {
   constructor() {
@@ -337,11 +359,18 @@ class BrowserOnlyMCPServer {
         `--remote-debugging-port=${debuggingPort}`,
         '--no-first-run',
       ];
-      // Opt-in persistent profile: set CHROMIUM_USER_DATA_DIR to keep cookies /
-      // logins across restarts. Unset = ephemeral profile (default).
-      if (process.env.CHROMIUM_USER_DATA_DIR) {
-        args.push(`--user-data-dir=${process.env.CHROMIUM_USER_DATA_DIR}`);
+      // Profile dir: persistent (kept) when CHROMIUM_USER_DATA_DIR is set, else a
+      // server-owned temp dir we delete on close (prevents orphaned profiles/cache).
+      let userDataDir = process.env.CHROMIUM_USER_DATA_DIR;
+      if (!userDataDir) {
+        cleanupManagedProfile();
+        managedProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), MANAGED_PROFILE_PREFIX));
+        userDataDir = managedProfileDir;
       }
+      args.push(`--user-data-dir=${userDataDir}`);
+      // Cap the on-disk HTTP cache so a profile can't balloon (default 100MB).
+      const diskCacheSize = parseInt(process.env.CHROMIUM_DISK_CACHE_SIZE || '104857600', 10);
+      args.push(`--disk-cache-size=${diskCacheSize}`);
       // Headful mode: set CHROMIUM_HEADLESS=false to launch a visible window
       // (e.g. to log in to a site by hand once into a persistent profile).
       if (process.env.CHROMIUM_HEADLESS === 'false' || process.env.CHROMIUM_HEADLESS === '0') {
@@ -560,6 +589,7 @@ class BrowserOnlyMCPServer {
       chromiumProcess = null;
     }
     
+    cleanupManagedProfile();
     currentTabId = null;
     
     return {

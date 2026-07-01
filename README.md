@@ -544,7 +544,13 @@ export CHROMIUM_PATH="/Applications/Brave Browser.app/Contents/MacOS/Brave Brows
 # Launch a visible (headful) window instead of headless — e.g. to log into a site
 # by hand once into a persistent profile (default: headless when unset)
 export CHROMIUM_HEADLESS=false
+
+# Cap Chrome's on-disk HTTP cache in bytes (default: 104857600 = 100MB).
+# Bounds profile/cache growth, especially with a persistent CHROMIUM_USER_DATA_DIR.
+export CHROMIUM_DISK_CACHE_SIZE=104857600
 ```
+
+**Disk hygiene:** in the default (ephemeral) mode the server launches Chrome with its **own temp profile dir and deletes it on close** — and sweeps any leftovers from crashed/killed prior runs on startup — so it can't accumulate orphaned profile/cache directories. The disk cache is capped (`CHROMIUM_DISK_CACHE_SIZE`) in both ephemeral and persistent modes. A persistent `CHROMIUM_USER_DATA_DIR` is intentionally kept (that's the point of it), so it's the one path you manage yourself.
 
 **Browser support:** auto-detects any Chromium-family browser — Chrome, Chromium, Microsoft Edge, Brave, Opera, Vivaldi (Firefox/Safari are not supported; the server speaks Chrome DevTools Protocol). Set `CHROMIUM_PATH` to force a specific binary.
 
