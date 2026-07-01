@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --inspect index.js"
+    "dev": "node --inspect index.js",
+    "test": "node test/smoke.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.5",
